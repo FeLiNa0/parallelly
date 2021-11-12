@@ -1,0 +1,302 @@
+#!/usr/bin/env bash
+
+############## Shell flags
+# Exit on error, undeclared variable reference, and set pipeline exit code
+# to that of failing command.
+set -eu
+
+############## Constants
+SCRIPT_NAME=parallely
+DEFAULT_CMD_SHELL=sh
+CMD_SHELL_ARGS="-c"
+SHOW_FAILED_CMD_OUTPUT_DEFAULT="tail -n1"
+VERSION=1.0.0
+
+############## Configurable environment variables
+CMD_SHELL="${CMD_SHELL-$DEFAULT_CMD_SHELL}"
+CMD_SHELL_WITH_ARGS="$CMD_SHELL $CMD_SHELL_ARGS"
+VERBOSE="${VERBOSE-false}"
+
+if [ "${SHOW_FAILED_CMD_OUTPUT-}" = "" ]; then
+  SHOW_FAILED_CMD_OUTPUT="$SHOW_FAILED_CMD_OUTPUT_DEFAULT"
+fi
+
+# If $DISPLAY is not set, only use CLI to notify about commands finishing
+if [ -z "$DISPLAY" ]; then
+  CLI_NOTIFY=true
+fi
+CLI_NOTIFY="${CLI_NOTIFY-false}"
+
+if [ "${NOTIFY_COMMAND-}" = "" ]; then
+  if [ "$CLI_NOTIFY" = true ]; then
+    NOTIFY_COMMAND="echo"
+  else
+    NOTIFY_COMMAND="notify-send"
+  fi
+fi
+
+if [ "${FAILURE_NOTIFY_COMMAND-}" = "" ]; then
+  if [ "$CLI_NOTIFY" = true ]; then
+    FAILURE_NOTIFY_COMMAND="echo ERROR"
+  else
+    FAILURE_NOTIFY_COMMAND="notify-send --urgency=critical"
+  fi
+fi
+
+# If output is not a tty, disable colors
+if ! [ -t 1 ]; then
+  ENABLE_COLORS=false
+fi
+ENABLE_COLORS="${ENABLE_COLORS-true}"
+
+############## Other variables
+NUM_CMDS="$(($# / 2 ))"
+CURRENT_CMD=0
+
+CMD_OUT_DIR="$(mktemp --directory)/config-logs-$(whoami)"
+mkdir -p "$CMD_OUT_DIR"
+
+# Stores array of PIDs of commands that were started
+pids=()
+
+############## Utility functions
+BLUE=34
+RED=31
+NONE=0
+color() {
+  if [ "$ENABLE_COLORS" = true ]; then
+    printf "\e[$1m"
+  fi
+}
+
+log() {
+  echo "$@"
+}
+
+verbose() {
+  if [ "$VERBOSE" = true ] ; then
+    color "$BLUE"
+    log "$@"
+    color "$NONE"
+  fi
+}
+
+error() {
+  color "$RED"
+  log ERROR "$@" >&2
+  color "$NONE"
+}
+
+############## Help
+help() {
+  echo "Description:"
+  echo "    Run commands in parallel while saving and summarizing command results."
+  echo
+  echo "    - Notify if a command succeeds (status code 0) or fails (non-zero status code)."
+  echo "    - Save command outputs to a temporary directory."
+  echo "    - Print command output if the command fails."
+  echo
+  echo "    See examples in section below."
+  echo
+  echo "USAGE:"
+  echo "    $SCRIPT_NAME [-h|--help]"
+  echo "    $SCRIPT_NAME [cmd_name cmd_with_arguments]+"
+  echo
+  echo "    One or more pairs of cmd_name followed by cmd_with_arguments are expected."
+  echo
+  echo "    --help|-h            Print this message."
+  echo "    cmd_name             A short and filesafe name for the following command."
+  echo "                         A cmd_with_arguments should always follow these args."
+  echo "    cmd_with_arguments   An escaped command to run in parallel"
+  echo
+  echo "Environment variables:"
+  echo "  Output:"
+  echo "    \$VERBOSE:"
+  echo "        Whether to print verbose logs."
+  printf %s \
+       "        If colors enabled, logs are colored "
+  color "$BLUE"
+  echo "BLUE."
+  color "$NONE"
+  echo "        Default: false"
+  echo "    \$ENABLE_COLORS: "
+  printf %s \
+       "        If enabled, errors are colored "
+  color "$RED"
+  echo "RED."
+  color "$NONE"
+  echo "        Default: true if output is a tty, false otherwise."
+  echo "    \$SHOW_FAILED_CMD_OUTPUT:"
+  echo "        Command for printing stderr and stdout of failed command/"
+  echo "        Default: $SHOW_FAILED_CMD_OUTPUT_DEFAULT"
+  echo "  Running commands:"
+  echo "    \$CMD_SHELL:"
+  echo "        Which shell to run the commands in."
+  echo "        Default: $DEFAULT_CMD_SHELL $CMD_SHELL_ARGS"
+  echo "  Notifications:"
+  echo "    \$CLI_NOTIFY:"
+  echo "        Whether to use GUI to notify when a command finishes."
+  echo "        Default: false if \$DISPLAY is set, false otherwise."
+  echo "    \$NOTIFY_COMMAND:"
+  echo "        Command to notify when a command succeeds."
+  echo "        Should take one argument."
+  echo "        Default: echo if \$CLI_NOTIFY is false, GUI command otherwise."
+  echo "    \$FAILURE_NOTIFY_COMMAND:"
+  echo "        Command to notify when a command fails."
+  echo "        Should take one argument."
+  echo "        Default: echo if \$CLI_NOTIFY is false, more visible GUI command otherwise."
+  echo
+  echo "Examples:"
+  echo
+  echo "  Multiple commands:"
+  echo "    $SCRIPT_NAME test-exit 'echo failure && exit 1' printf-abc 'printf \"%s %s\" abc 123' rsync-src 'rsync -rhP src backup'"
+  echo
+  echo "  A command without arguments:"
+  echo "    $SCRIPT_NAME list-files ls"
+  echo
+  echo "  Verbose output and a command without arguments:"
+  echo "    VERBOSE=true $SCRIPT_NAME list-files ls"
+  echo
+  echo "  A command with arguments:"
+  echo "    $SCRIPT_NAME rsync-src 'rsync -rhP src backup'"
+  echo
+  echo "  A command with arguments that have spaces in them:"
+  echo "    $SCRIPT_NAME printf-abc 'printf \"%s %s\" abc 123'"
+  echo
+  echo "  Shell commands:"
+  echo "    $SCRIPT_NAME test-exit 'echo failure && exit 1'"
+  echo "    $SCRIPT_NAME test-statement 'if true; then echo 1; fi'"
+  echo
+  echo "    Commands are run in the $CMD_SHELL shell with: $CMD_SHELL_WITH_ARGS \"\$COMMAND\""
+  echo
+  echo "Contributors: Hugo O. Rivera"
+  echo "Version: $VERSION"
+}
+
+############## Parse command line arguments
+if [ "$#" = 0 ]; then
+  help
+  error Expected more arguments.
+  exit 0
+fi
+
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+  help
+  exit 0
+fi
+
+if [ $(($# % 2 )) != 0 ]; then
+  help
+  error Expected even number of arguments.
+  exit 0
+fi
+
+############## Main functions
+
+run_cmd() {
+  # Run a command in background and save its stderr and stdout to files
+  NAME="$1"
+  COMMAND="$2"
+  STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
+  STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
+
+  # Run command and then run notify command.
+  # If notify command fails, do not count the command as a failed command
+  # TODO print command that ran in notification. Account for commands
+  # like 
+  $CMD_SHELL_WITH_ARGS \
+      "$COMMAND" > "$STDOUT_FILE" 2> "$STDERR_FILE" \
+    && ( \
+      $CMD_SHELL_WITH_ARGS \
+        "$NOTIFY_COMMAND \"parallely: $NAME command finished\"" \
+      || true \
+    ) \
+    || ( \
+      $CMD_SHELL_WITH_ARGS \
+        "$FAILURE_NOTIFY_COMMAND \"parallely ERROR: $NAME command FAILED\"" \
+      && false \
+    ) \
+    &
+  PID="$!"
+  pids+=("$PID")
+  echo "$NAME" > "$CMD_OUT_DIR/$PID"
+  verbose "Starting $NAME command $CURRENT_CMD/$NUM_CMDS:" $CMD_SHELL_WITH_ARGS "$COMMAND"
+}
+
+verbose "Starting $SCRIPT_NAME with $NUM_CMDS commands"
+verbose "VERBOSE=$VERBOSE"
+verbose "CMD_SHELL=$CMD_SHELL"
+verbose "SHOW_FAILED_CMD_OUTPUT=$SHOW_FAILED_CMD_OUTPUT"
+verbose "NOTIFY_COMMAND=$NOTIFY_COMMAND"
+verbose "FAILURE_NOTIFY_COMMAND=$FAILURE_NOTIFY_COMMAND"
+verbose "ENABLE_COLORS=$ENABLE_COLORS"
+
+############## Main loop
+
+# Iterate through all given command line arguments.
+# Run each one as a command in parallel, saving its output to a tmp file.
+while [ "$#" -gt 0 ]; do
+  NAME="$1"
+  COMMAND="$2"
+  CURRENT_CMD="$(( CURRENT_CMD + 1))"
+  shift
+  shift
+  run_cmd "$NAME" "$COMMAND"
+done
+
+############## Wait for commands and show results, especially from failed commands
+
+show_output() {
+  # Print output of a command
+  OUTPUT_NAME="$1"
+  NAME="$2"
+  FILE="$3"
+  if [ "$(cat "$FILE")" = "" ]; then
+    echo "No $OUTPUT_NAME output for failed command $NAME"
+  else
+    echo "$OUTPUT_NAME output for failed command $NAME:"
+    verbose $SHOW_FAILED_CMD_OUTPUT "$FILE"
+    $SHOW_FAILED_CMD_OUTPUT "$FILE"
+    echo
+  fi
+}
+
+FAILURE=false
+FAILED_CMDS=""
+FAILURES=0
+SUCCESS=0
+# Wait for commands
+for PID in "${pids[@]}"; do
+  NAME="$(cat "$CMD_OUT_DIR/$PID")"
+  STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
+  STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
+  OUTPUT_FILES="$STDOUT_FILE $STDERR_FILE"
+  if ! wait "$PID"; then
+    show_output Stderr "$NAME" "$STDERR_FILE"
+    show_output Stdout "$NAME" "$STDOUT_FILE"
+    error "Failure in command $NAME pid=$PID"
+    error "Output files: $OUTPUT_FILES"
+    FAILURE=true
+    FAILURES="$((FAILURES + 1))"
+    FAILED_CMDS="$NAME $FAILED_CMDS"
+  else
+    SUCCESS="$((SUCCESS + 1))"
+    verbose "Command $NAME succeeded"
+    verbose "Output files: $OUTPUT_FILES"
+  fi
+done
+
+command_noun() {
+  if [ "$1" -gt 1 ]; then
+    echo commands
+  else
+    echo command
+  fi
+}
+
+# Print summary
+echo "$SUCCESS $(command_noun "$SUCCESS") out of $NUM_CMDS ran successfully"
+if [ "$FAILURE" = true ]; then
+  error "$FAILURES $(command_noun "$FAILURES") out of $NUM_CMDS could not run: $FAILED_CMDS"
+  exit 1
+fi

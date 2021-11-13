@@ -15,7 +15,11 @@ VERSION=1.2.1
 ############## Configurable environment variables
 CMD_SHELL="${CMD_SHELL-$DEFAULT_CMD_SHELL}"
 CMD_SHELL_WITH_ARGS="$CMD_SHELL $CMD_SHELL_ARGS"
-VERBOSE="${VERBOSE-false}"
+
+if [ "${VERBOSE-}" != "" ]; then
+  PARALLELY_VERBOSE_OUTPUT="$VERBOSE"
+fi
+PARALLELY_VERBOSE_OUTPUT="${PARALLELY_VERBOSE_OUTPUT-false}"
 
 if [ "${SHOW_FAILED_CMD_OUTPUT-}" = "" ]; then
   SHOW_FAILED_CMD_OUTPUT="$SHOW_FAILED_CMD_OUTPUT_DEFAULT"
@@ -75,7 +79,7 @@ log() {
 }
 
 verbose() {
-  if [ "$VERBOSE" = true ] ; then
+  if [ "$PARALLELY_VERBOSE_OUTPUT" = true ] ; then
     color "$BLUE"
     log "$@"
     color "$NONE"
@@ -90,7 +94,7 @@ section() {
 }
 
 verbose_section() {
-  if [ "$VERBOSE" = true ] ; then
+  if [ "$PARALLELY_VERBOSE_OUTPUT" = true ] ; then
     section "$@"
   fi
 }
@@ -126,14 +130,14 @@ help() {
   echo
   echo "Environment variables:"
   echo "  Output:"
-  echo "    \$VERBOSE:"
+  echo "    \$PARALLELY_VERBOSE_OUTPUT:"
   echo "        Whether to print verbose logs."
   printf '%s' \
        "        If colors are enabled, logs are "
   color "$BLUE"
   echo "colored."
   color "$NONE"
-  echo "        Default: false"
+  echo "        Default: false or value of \$VERBOSE if it is set"
   echo "    \$ENABLE_COLORS: "
   printf '%s' \
        "        If enabled, errors are "
@@ -173,7 +177,7 @@ help() {
   echo "    $SCRIPT_NAME list-files ls"
   echo
   echo "  Verbose output and a command without arguments:"
-  echo "    VERBOSE=true $SCRIPT_NAME list-files ls"
+  echo "    PARALLELY_VERBOSE_OUTPUT=true $SCRIPT_NAME list-files ls"
   echo
   echo "  A command with arguments:"
   echo "    $SCRIPT_NAME rsync-src 'rsync -rhP src backup'"
@@ -245,7 +249,7 @@ run_cmd() {
 verbose "Starting $SCRIPT_NAME with $NUM_CMDS commands"
 
 verbose_section Configuration
-verbose "VERBOSE=$VERBOSE"
+verbose "PARALLELY_VERBOSE_OUTPUT=$PARALLELY_VERBOSE_OUTPUT"
 verbose "CMD_SHELL=$CMD_SHELL"
 verbose "SHOW_FAILED_CMD_OUTPUT=$SHOW_FAILED_CMD_OUTPUT"
 verbose "NOTIFY_COMMAND=$NOTIFY_COMMAND"

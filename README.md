@@ -31,10 +31,10 @@ USAGE:
 
 Environment variables:
   Output:
-    $VERBOSE:
+    $PARALLELY_VERBOSE_OUTPUT:
         Whether to print verbose logs.
         If colors are enabled, logs are colored.
-        Default: false
+        Default: false or value of $VERBOSE if it is set
     $ENABLE_COLORS: 
         If enabled, errors are colored.
         Default: true if output is a tty, false otherwise.
@@ -70,7 +70,7 @@ Examples:
     parallely list-files ls
 
   Verbose output and a command without arguments:
-    VERBOSE=true parallely list-files ls
+    PARALLELY_VERBOSE_OUTPUT=true parallely list-files ls
 
   A command with arguments:
     parallely rsync-src 'rsync -rhP src backup'
@@ -85,7 +85,7 @@ Examples:
     Commands are run in the sh shell with: sh -c "$COMMAND"
 
 Contributors: Hugo O. Rivera
-Version: 1.2.1
+Version: 1.2.2
 
 ```
 

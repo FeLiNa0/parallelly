@@ -37,7 +37,7 @@ fi
 
 if [ "${FAILURE_NOTIFY_COMMAND-}" = "" ]; then
   if [ "$CLI_NOTIFY" = true ]; then
-    FAILURE_NOTIFY_COMMAND="echo ERROR"
+    FAILURE_NOTIFY_COMMAND="echo" 
   else
     FAILURE_NOTIFY_COMMAND="notify-send --urgency=critical"
   fi
@@ -53,7 +53,7 @@ ENABLE_COLORS="${ENABLE_COLORS-true}"
 NUM_CMDS="$(($# / 2 ))"
 CURRENT_CMD=0
 
-CMD_OUT_DIR="$(mktemp --directory)/config-logs-$(whoami)"
+CMD_OUT_DIR="$(mktemp --directory)/$SCRIPT_NAME-logs-$(whoami)-$(date +%Y-%m-%d)"
 mkdir -p "$CMD_OUT_DIR"
 
 # Stores array of PIDs of commands that were started
@@ -106,6 +106,7 @@ help() {
   echo
   echo "    --help|-h            Print this message."
   echo "    cmd_name             A short and filesafe name for the following command."
+  echo "                         Used in notifications and files storing outout."
   echo "                         A cmd_with_arguments should always follow these args."
   echo "    cmd_with_arguments   An escaped command to run in parallel"
   echo
@@ -114,16 +115,16 @@ help() {
   echo "    \$VERBOSE:"
   echo "        Whether to print verbose logs."
   printf %s \
-       "        If colors enabled, logs are colored "
+       "        If colors are enabled, logs are "
   color "$BLUE"
-  echo "BLUE."
+  echo "colored."
   color "$NONE"
   echo "        Default: false"
   echo "    \$ENABLE_COLORS: "
   printf %s \
-       "        If enabled, errors are colored "
+       "        If enabled, errors are "
   color "$RED"
-  echo "RED."
+  echo "colored."
   color "$NONE"
   echo "        Default: true if output is a tty, false otherwise."
   echo "    \$SHOW_FAILED_CMD_OUTPUT:"
@@ -150,6 +151,9 @@ help() {
   echo
   echo "  Multiple commands:"
   echo "    $SCRIPT_NAME test-exit 'echo failure && exit 1' printf-abc 'printf \"%s %s\" abc 123' rsync-src 'rsync -rhP src backup'"
+  echo
+  echo "    The odd numbered arguments are short, filesafe names for each command." 
+  echo "    The names are used in notifications and files storing outout."
   echo
   echo "  A command without arguments:"
   echo "    $SCRIPT_NAME list-files ls"
@@ -272,8 +276,8 @@ for PID in "${pids[@]}"; do
   STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
   OUTPUT_FILES="$STDOUT_FILE $STDERR_FILE"
   if ! wait "$PID"; then
-    show_output Stderr "$NAME" "$STDERR_FILE"
-    show_output Stdout "$NAME" "$STDOUT_FILE"
+    show_output STDERR "$NAME" "$STDERR_FILE"
+    show_output STDOUT "$NAME" "$STDOUT_FILE"
     error "Failure in command $NAME pid=$PID"
     error "Output files: $OUTPUT_FILES"
     FAILURE=true

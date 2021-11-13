@@ -52,6 +52,10 @@ Environment variables:
     $CMD_SHELL:
         Which shell to run the commands in.
         Default: sh -c
+    $FORCE_SEQUENTIAL:
+        Run commands sequentially instead of in parallel.
+        Useful if you just want to capture output and get notifications.
+        Default: false
   Notifications:
     $CLI_NOTIFY:
         Whether to use GUI to notify when a command finishes.
@@ -108,7 +112,7 @@ Examples:
     VERBOSE=true CLI_NOTIFY=true parallely 3 'sleep 2' 2 'sleep 1' 1 'sleep 0.1'
 
 Contributors: Hugo O. Rivera
-Version: 1.4.0
+Version: 1.5.0
 
 ```
 

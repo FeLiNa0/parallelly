@@ -35,6 +35,9 @@ Environment variables:
         Whether to print verbose logs.
         If colors are enabled, logs are colored.
         Default: false or value of $VERBOSE if it is set
+    $PARALLELY_EMOJI_OUTPUT:
+        Whether to print emoji.
+        Default: true if output is a tty and $DISPLAY is set, false otherwise.
     $ENABLE_COLORS: 
         If enabled, errors are colored.
         Default: true if output is a tty, false otherwise.
@@ -65,7 +68,12 @@ Environment variables:
 Examples:
 
   Multiple commands:
-    parallely test-exit 'echo failure && exit 1' printf-abc 'printf "%s %s" abc 123' rsync-src 'rsync -rhP src backup'
+    parallely fail 'echo failure && exit 1' \
+      fail-printf-nonewline 'printf "%s %s"\ abc 123 ; false' \
+      fail-rsync-src 'rsync -rhP nonexistentdir backup' \
+      delay 'sleep 0.2' \
+      fail-slower-delay '! sleep 0.4' \
+      fail-no-output 'exit 210'
 
     The odd numbered arguments are short, filesafe names for each command.
     The names are used in notifications and files storing outout.
@@ -75,6 +83,7 @@ Examples:
 
   Verbose output and a command without arguments:
     VERBOSE=true parallely list-files ls
+    PARALLELY_VERBOSE_OUTPUT=true parallely list-files ls
 
   A command with arguments:
     parallely rsync-src 'rsync -rhP src backup'
@@ -88,8 +97,18 @@ Examples:
 
     Commands are run in the sh shell with: sh -c "$COMMAND"
 
+  Commands are waited one at a time in order:
+    This means that you should list the fast commands first.
+    VERBOSE=true parallely 1 'sleep 0.1' 2 'sleep 1' 3 'sleep 2'
+
+    Or else, it'll take a bit longer to see successful outputs.
+    VERBOSE=true parallely 3 'sleep 2' 2 'sleep 1' 1 'sleep 0.1'
+
+    Regardless, you are notified as soon as a command finishes.
+    VERBOSE=true CLI_NOTIFY=true parallely 3 'sleep 2' 2 'sleep 1' 1 'sleep 0.1'
+
 Contributors: Hugo O. Rivera
-Version: 1.3.0
+Version: 1.4.0
 
 ```
 

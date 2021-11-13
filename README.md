@@ -1,4 +1,4 @@
-# parallely: Run commands in parallel while saving and summarizing command results.
+# parallely: Run commands in parallel and capture output. Notify on each completion.
 
 <!--
 EDIT README.template.md, not README.md directly.
@@ -85,7 +85,7 @@ Examples:
     Commands are run in the sh shell with: sh -c "$COMMAND"
 
 Contributors: Hugo O. Rivera
-Version: 1.1.0
+Version: 1.2.0
 
 ```
 

@@ -10,7 +10,7 @@ SCRIPT_NAME=parallely
 DEFAULT_CMD_SHELL=sh
 CMD_SHELL_ARGS="-c"
 SHOW_FAILED_CMD_OUTPUT_DEFAULT="tail -n1"
-VERSION=1.1.0
+VERSION=1.2.0
 
 ############## Configurable environment variables
 CMD_SHELL="${CMD_SHELL-$DEFAULT_CMD_SHELL}"

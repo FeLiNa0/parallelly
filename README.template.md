@@ -1,4 +1,4 @@
-# parallely: Run commands in parallel while saving and summarizing command results.
+# parallely: Run commands in parallel and capture output. Notify on each completion.
 
 <!--
 EDIT README.template.md, not README.md directly.

@@ -9,7 +9,7 @@ Use `make build-readme to update the README file
 
 ```
 Description:
-    Run commands in parallel while saving and summarizing command results.
+    Run commands in parallel and capture output. Notify on each completion.
 
     - Notify if a command succeeds (status code 0) or fails (non-zero status code).
     - Save command outputs to a temporary directory.

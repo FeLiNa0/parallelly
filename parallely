@@ -6,8 +6,8 @@
 set -eu
 
 ############## Constants
-SCRIPT_NAME=parallely
-DEFAULT_CMD_SHELL=sh
+SCRIPT_NAME="parallely"
+DEFAULT_CMD_SHELL="sh"
 CMD_SHELL_ARGS="-c"
 SHOW_FAILED_CMD_OUTPUT_DEFAULT="tail -n1"
 VERSION=1.2.1
@@ -60,12 +60,13 @@ mkdir -p "$CMD_OUT_DIR"
 pids=()
 
 ############## Utility functions
+# TODO use tput
 BLUE=34
 RED=31
 NONE=0
 color() {
   if [ "$ENABLE_COLORS" = true ]; then
-    printf "\e[$1m"
+    printf "\\e[%sm" $1
   fi
 }
 
@@ -114,14 +115,14 @@ help() {
   echo "  Output:"
   echo "    \$VERBOSE:"
   echo "        Whether to print verbose logs."
-  printf %s \
+  printf '%s' \
        "        If colors are enabled, logs are "
   color "$BLUE"
   echo "colored."
   color "$NONE"
   echo "        Default: false"
   echo "    \$ENABLE_COLORS: "
-  printf %s \
+  printf '%s' \
        "        If enabled, errors are "
   color "$RED"
   echo "colored."
@@ -208,12 +209,13 @@ run_cmd() {
   # If notify command fails, do not count the command as a failed command
   # TODO print command that ran in notification. Account for commands
   # like 
-  $CMD_SHELL_WITH_ARGS \
-      "$COMMAND" > "$STDOUT_FILE" 2> "$STDERR_FILE" \
-    && ( \
-      $CMD_SHELL_WITH_ARGS \
-        "$NOTIFY_COMMAND \"parallely: $NAME command finished\"" \
-      || true \
+    ( $CMD_SHELL_WITH_ARGS \
+        "$COMMAND" > "$STDOUT_FILE" 2> "$STDERR_FILE" \
+      && ( \
+        $CMD_SHELL_WITH_ARGS \
+          "$NOTIFY_COMMAND \"parallely: $NAME command finished\"" \
+        || true \
+      ) \
     ) \
     || ( \
       $CMD_SHELL_WITH_ARGS \
@@ -224,7 +226,7 @@ run_cmd() {
   PID="$!"
   pids+=("$PID")
   echo "$NAME" > "$CMD_OUT_DIR/$PID"
-  verbose "Starting $NAME command $CURRENT_CMD/$NUM_CMDS:" $CMD_SHELL_WITH_ARGS "$COMMAND"
+  verbose "Starting $NAME command $CURRENT_CMD/$NUM_CMDS:" "$CMD_SHELL_WITH_ARGS" "$COMMAND"
 }
 
 verbose "Starting $SCRIPT_NAME with $NUM_CMDS commands"
@@ -259,7 +261,7 @@ show_output() {
     echo "No $OUTPUT_NAME output for failed command $NAME"
   else
     echo "$OUTPUT_NAME output for failed command $NAME:"
-    verbose $SHOW_FAILED_CMD_OUTPUT "$FILE"
+    verbose "$SHOW_FAILED_CMD_OUTPUT" "$FILE"
     $SHOW_FAILED_CMD_OUTPUT "$FILE"
     echo
   fi

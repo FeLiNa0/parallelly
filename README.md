@@ -85,7 +85,7 @@ Examples:
     Commands are run in the sh shell with: sh -c "$COMMAND"
 
 Contributors: Hugo O. Rivera
-Version: 1.2.0
+Version: 1.2.1
 
 ```
 

@@ -242,11 +242,13 @@ help() {
   echo "        Default: false if \$DISPLAY is set, false otherwise."
   echo "    \$NOTIFY_COMMAND:"
   echo "        Command to notify when a command succeeds."
-  echo "        Should take one argument that contains spaces."
+  echo "        Should take two arguments, each possibly containing spaces."
+  echo "        First argument is title, second is a description."
   echo "        Default: echo if \$CLI_NOTIFY is false, GUI command otherwise."
   echo "    \$FAILURE_NOTIFY_COMMAND:"
   echo "        Command to notify when a command fails."
-  echo "        Should take one argument."
+  echo "        Should take two arguments, each possibly containing spaces."
+  echo "        First argument is title, second is a description."
   echo "        Default: echo if \$CLI_NOTIFY is false, more visible GUI command otherwise."
   echo
   echo "Examples:"
@@ -329,14 +331,12 @@ run_cmd() {
     ( $CMD_SHELL_WITH_ARGS \
         "$COMMAND" > "$STDOUT_FILE" 2> "$STDERR_FILE" \
       && ( \
-        $CMD_SHELL_WITH_ARGS \
-          "$NOTIFY_COMMAND \"parallely: $NAME command finished\"" \
+        $NOTIFY_COMMAND "parallely: $NAME command finished" "$COMMAND" \
         || true \
       ) \
     ) \
     || ( \
-      $CMD_SHELL_WITH_ARGS \
-        "$FAILURE_NOTIFY_COMMAND \"parallely ERROR: $NAME command FAILED\"" \
+      $FAILURE_NOTIFY_COMMAND "parallely: $NAME command failed" "$COMMAND" \
       && false \
     ) \
     &

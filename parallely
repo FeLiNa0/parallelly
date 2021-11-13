@@ -194,12 +194,13 @@ help() {
   echo "    See examples in section below."
   echo
   echo "USAGE:"
-  echo "    $SCRIPT_NAME [-h|--help]"
+  echo "    $SCRIPT_NAME -h|--help|-v|--version"
   echo "    $SCRIPT_NAME [cmd_name cmd_with_arguments]+"
   echo
   echo "    One or more pairs of cmd_name followed by cmd_with_arguments are expected."
   echo
-  echo "    --help|-h            Print this message."
+  echo "    -h|--help            Print this message."
+  echo "    -v|--version         Print version of this script."
   echo "    cmd_name             A short and filesafe name for the following command."
   echo "                         Used in notifications and files storing output."
   echo "                         A cmd_with_arguments should always follow these args."
@@ -309,6 +310,11 @@ fi
 
 if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   help
+  exit 0
+fi
+
+if [ "$1" = "--version" ] || [ "$1" = "-v" ]; then
+  log "$VERSION"
   exit 0
 fi
 

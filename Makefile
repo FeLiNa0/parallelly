@@ -11,12 +11,13 @@ build-readme:
 	./utils/generate_readme.py ./README.template.md > ./README.md
 
 release:
-	# Check version is valid
-	[ "$(TITLE)" != "" ] || (echo Please set the title with \`make TITLE=...\`; false)
-	echo "$(VERSION)" | grep '^[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?$$' || (echo Must pass version string as \`make VERSION=XX.YY[.ZZ]\`; false)
+	# Check version and title are set and valid
+	@[ "$(TITLE)" != "" ] || (echo Please set the title with \`make TITLE=...\`; false)
+	@echo "$(VERSION)" | grep '^[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?$$' || (echo Must pass version string as \`make VERSION=XX.YY[.ZZ]\`; false)
 	./utils/bump-version.sh "$(VERSION)"
 	make build-readme
-	git commit -am "Bump version to $(VERSION)" -m "$(TITLE)"
+	@[ "$(git status --porcelain | wc -l)" = 0 ] || (echo Please commit all your changes first. ; false )
+	git commit -m "Bump version to $(VERSION)" -m "$(TITLE)"
 	git push
 	gh release create --target main "v$(VERSION)" --title "v$(VERSION) $(TITLE)" $(SHELLSCRIPT)
 

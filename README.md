@@ -25,7 +25,7 @@ USAGE:
 
     --help|-h            Print this message.
     cmd_name             A short and filesafe name for the following command.
-                         Used in notifications and files storing outout.
+                         Used in notifications and files storing output.
                          A cmd_with_arguments should always follow these args.
     cmd_with_arguments   An escaped command to run in parallel
 
@@ -41,6 +41,10 @@ Environment variables:
     $SHOW_FAILED_CMD_OUTPUT:
         Command for printing stderr and stdout of failed command/
         Default: tail -n1
+        Example values:
+          Show all output: cat
+          Show last ten lines: tail -n10
+          Show output for each command one at a time: less
   Running commands:
     $CMD_SHELL:
         Which shell to run the commands in.
@@ -51,7 +55,7 @@ Environment variables:
         Default: false if $DISPLAY is set, false otherwise.
     $NOTIFY_COMMAND:
         Command to notify when a command succeeds.
-        Should take one argument.
+        Should take one argument that contains spaces.
         Default: echo if $CLI_NOTIFY is false, GUI command otherwise.
     $FAILURE_NOTIFY_COMMAND:
         Command to notify when a command fails.
@@ -70,7 +74,7 @@ Examples:
     parallely list-files ls
 
   Verbose output and a command without arguments:
-    PARALLELY_VERBOSE_OUTPUT=true parallely list-files ls
+    VERBOSE=true parallely list-files ls
 
   A command with arguments:
     parallely rsync-src 'rsync -rhP src backup'
@@ -85,7 +89,7 @@ Examples:
     Commands are run in the sh shell with: sh -c "$COMMAND"
 
 Contributors: Hugo O. Rivera
-Version: 1.2.2
+Version: 1.3.0
 
 ```
 

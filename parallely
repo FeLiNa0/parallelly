@@ -25,6 +25,11 @@ if ! [ -z "${VERBOSE-}" ]; then
 fi
 PARALLELY_VERBOSE_OUTPUT="${PARALLELY_VERBOSE_OUTPUT-false}"
 
+if ! [ -z "${ALL_OUTPUT-}" ]; then
+  PARALLELY_SHOW_ALL_OUTPUT="$ALL_OUTPUT"
+fi
+PARALLELY_SHOW_ALL_OUTPUT="${PARALLELY_SHOW_ALL_OUTPUT-$PARALLELY_VERBOSE_OUTPUT}"
+
 if [ -z "${SHOW_FAILED_CMD_OUTPUT-}" ]; then
   SHOW_FAILED_CMD_OUTPUT="$SHOW_FAILED_CMD_OUTPUT_DEFAULT"
 fi
@@ -127,22 +132,24 @@ log_color() {
 }
 
 verbose() {
-  if [ "$PARALLELY_VERBOSE_OUTPUT" = true ] ; then
+  if [ "${FORCE_LOG-false}" = true ] || [ "$PARALLELY_VERBOSE_OUTPUT" = true ] ; then
     log_color "$BLUE" "$@"
   fi
 }
 
-section() {
+section_str() {
   color 3
   color 1
   log ============= "$@" =============
   color "$NONE"
 }
 
+section() {
+  log "$(section_str "$@")"
+}
+
 verbose_section() {
-  if [ "$PARALLELY_VERBOSE_OUTPUT" = true ] ; then
-    section "$@"
-  fi
+  verbose "$(section_str "$@")"
 }
 
 # Logs to stderr
@@ -370,10 +377,11 @@ verbose
 ############## Wait for commands and show results, especially from failed commands
 show_output() {
   # Print output of a command
-  OUTPUT_NAME="$1"
-  NAME="$2"
-  FILE="$3"
-  printf "%s" "$OUTPUT_NAME output for failed command $NAME:"
+  DISPOSITION="$1"
+  OUTPUT_NAME="$2"
+  NAME="$3"
+  FILE="$4"
+  printf "%s" "$OUTPUT_NAME output for $DISPOSITION command $NAME:"
   if [ -z "$(cat "$FILE")" ]; then
     log_color "$GREY" " $NO_OUTPUT_INDICATOR"
   else
@@ -415,6 +423,11 @@ failedpids=()
 verbose_section Waiting for commands to finish
 verbose Will list successful and failed commands.
 verbose
+FORCE_LOG=false
+if [ "$PARALLELY_VERBOSE_OUTPUT" != true ] && [ "$PARALLELY_SHOW_ALL_OUTPUT" = true ]; then
+  FORCE_LOG=true
+fi
+
 for PID in "${pids[@]}"; do
   if wait "$PID"; then
     SUCCESS="$((SUCCESS + 1))"
@@ -423,14 +436,21 @@ for PID in "${pids[@]}"; do
     fi
 
     NAME="$(cat "$CMD_OUT_DIR/$PID")"
-    OUTPUT_FILES="$CMD_OUT_DIR/$NAME.stderr\n$CMD_OUT_DIR/$NAME.stdout"
+    STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
+    STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
+    OUTPUT_FILES="$STDERR_FILE\n$STDOUT_FILE"
     verbose "$(emoji checkmark)Command $NAME succeeded. Output in:\n$OUTPUT_FILES"
+    if [ "$PARALLELY_SHOW_ALL_OUTPUT" = true ]; then
+      show_output successful STDERR "$NAME" "$STDERR_FILE"
+      show_output successful STDOUT "$NAME" "$STDOUT_FILE"
+    fi
     verbose
   else
     FAILURE=true
     failedpids+=("$PID")
   fi
 done
+FORCE_LOG=false
 
 for PID in "${failedpids[@]}"; do
   FAILURES="$((FAILURES + 1))"
@@ -445,8 +465,8 @@ for PID in "${failedpids[@]}"; do
   STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
   OUTPUT_FILES="$STDERR_FILE\n$STDOUT_FILE"
   error "Failure in command $NAME. Output in:\n$OUTPUT_FILES"
-  show_output STDERR "$NAME" "$STDERR_FILE"
-  show_output STDOUT "$NAME" "$STDOUT_FILE"
+  show_output failed STDERR "$NAME" "$STDERR_FILE"
+  show_output failed STDOUT "$NAME" "$STDOUT_FILE"
   if [ "$NEWLINE_AFTER_EVERY_ERROR" = true ]; then
     log
   fi

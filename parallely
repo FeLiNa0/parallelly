@@ -20,12 +20,12 @@ NO_EOF_NEWLINE_INDICATOR="(no newline at end of output)"
 CMD_SHELL="${CMD_SHELL-$DEFAULT_CMD_SHELL}"
 CMD_SHELL_WITH_ARGS="$CMD_SHELL $CMD_SHELL_ARGS"
 
-if ! [ -z "${VERBOSE-}" ]; then
+if [ -n "${VERBOSE-}" ]; then
   PARALLELY_VERBOSE_OUTPUT="$VERBOSE"
 fi
 PARALLELY_VERBOSE_OUTPUT="${PARALLELY_VERBOSE_OUTPUT-false}"
 
-if ! [ -z "${ALL_OUTPUT-}" ]; then
+if [ -n "${ALL_OUTPUT-}" ]; then
   PARALLELY_SHOW_ALL_OUTPUT="$ALL_OUTPUT"
 fi
 PARALLELY_SHOW_ALL_OUTPUT="${PARALLELY_SHOW_ALL_OUTPUT-$PARALLELY_VERBOSE_OUTPUT}"
@@ -85,7 +85,7 @@ if [ "$PARALLELY_VERBOSE_OUTPUT" = true ]; then
 fi
 
 # Stores array of PIDs of commands that were started
-pids=()
+pids=""
 
 ############## Utility functions
 # TODO use tput
@@ -95,7 +95,7 @@ GREY=37
 NONE=0
 color() {
   if [ "$ENABLE_COLORS" = true ]; then
-    printf "\\e[%sm" $1
+    printf "\\e[%sm" "$1"
   fi
 }
 
@@ -121,7 +121,7 @@ emoji() {
 }
 
 log() {
-  echo -e "$@"
+  echo "$@"
 }
 
 log_color() {
@@ -335,7 +335,7 @@ run_cmd() {
     ) \
     &
   PID="$!"
-  pids+=("$PID")
+  pids="$pids $PID"
   echo "$NAME" > "$CMD_OUT_DIR/$PID"
   verbose "Starting $NAME command $CURRENT_CMD/$NUM_CMDS:" "$CMD_SHELL_WITH_ARGS" "$COMMAND"
 }
@@ -344,7 +344,7 @@ log "$SCRIPT_NAME will run $NUM_CMDS commands in parallel $(emoji rocket)"
 
 verbose_section Configuration
 verbose "PARALLELY_VERBOSE_OUTPUT=$PARALLELY_VERBOSE_OUTPUT"
-if ! [ -z "${VERBOSE-}" ]; then
+if [ -n "${VERBOSE-}" ]; then
   verbose "PARALLELY_VERBOSE_OUTPUT set from VERBOSE"
 fi
 verbose "PARALLELY_EMOJI_OUTPUT=$PARALLELY_EMOJI_OUTPUT"
@@ -388,7 +388,7 @@ show_output() {
     log
     verbose "$SHOW_FAILED_CMD_OUTPUT" "$FILE"
     $SHOW_FAILED_CMD_OUTPUT "$FILE"
-    if [ "$(tail -c1 "$FILE")" != "$(echo -e "\n")" ]; then
+    if [ "$(tail -c1 "$FILE")" != "$(printf "\n")" ]; then
       log
       log_color "$GREY" "$NO_EOF_NEWLINE_INDICATOR"
     fi
@@ -418,7 +418,7 @@ FAILURE=false
 FAILED_CMDS=""
 FAILURES=0
 SUCCESS=0
-failedpids=()
+failedpids=""
 # Wait for commands
 verbose_section Waiting for commands to finish
 verbose Will list successful and failed commands.
@@ -428,7 +428,7 @@ if [ "$PARALLELY_VERBOSE_OUTPUT" != true ] && [ "$PARALLELY_SHOW_ALL_OUTPUT" = t
   FORCE_LOG=true
 fi
 
-for PID in "${pids[@]}"; do
+for PID in $pids; do
   if wait "$PID"; then
     SUCCESS="$((SUCCESS + 1))"
     if [ "$SUCCESS" = 1 ]; then
@@ -438,8 +438,9 @@ for PID in "${pids[@]}"; do
     NAME="$(cat "$CMD_OUT_DIR/$PID")"
     STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
     STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
-    OUTPUT_FILES="$STDERR_FILE\n$STDOUT_FILE"
-    verbose "$(emoji checkmark)Command $NAME succeeded. Output in:\n$OUTPUT_FILES"
+    verbose "$(emoji checkmark)Command $NAME succeeded. Output in:"
+    verbose "$STDERR_FILE"
+    verbose "$STDOUT_FILE"
     if [ "$PARALLELY_SHOW_ALL_OUTPUT" = true ]; then
       show_output successful STDERR "$NAME" "$STDERR_FILE"
       show_output successful STDOUT "$NAME" "$STDOUT_FILE"
@@ -447,24 +448,25 @@ for PID in "${pids[@]}"; do
     verbose
   else
     FAILURE=true
-    failedpids+=("$PID")
+    failedpids="$failedpids $PID"
   fi
 done
 FORCE_LOG=false
 
-for PID in "${failedpids[@]}"; do
+for PID in $failedpids; do
   FAILURES="$((FAILURES + 1))"
   NAME="$(cat "$CMD_OUT_DIR/$PID")"
   FAILED_CMDS="$NAME $FAILED_CMDS"
 
   if [ "$FAILURES" = 1 ]; then
-    error_section "Failed command $(noun "${#failedpids}" output)"
+    error_section "Failed command $(noun "$(echo "$failedpids" | wc -w)" output)"
   fi
 
   STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
   STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
-  OUTPUT_FILES="$STDERR_FILE\n$STDOUT_FILE"
-  error "Failure in command $NAME. Output in:\n$OUTPUT_FILES"
+  error "Failure in command $NAME. Output in:"
+  log "$STDERR_FILE"
+  log "$STDOUT_FILE"
   show_output failed STDERR "$NAME" "$STDERR_FILE"
   show_output failed STDOUT "$NAME" "$STDOUT_FILE"
   if [ "$NEWLINE_AFTER_EVERY_ERROR" = true ]; then
@@ -472,7 +474,7 @@ for PID in "${failedpids[@]}"; do
   fi
 done
 
-TOTAL_TIME="$(subtract_two_floats "$(time_in_sec)" $START_TIME)"
+TOTAL_TIME="$(subtract_two_floats "$(time_in_sec)" "$START_TIME")"
 
 ############## Print summary and timing
 verbose_section SUMMARY

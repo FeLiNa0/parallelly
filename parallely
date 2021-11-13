@@ -366,7 +366,7 @@ done
 
 TOTAL_TIME="$(subtract_two_floats "$(time_in_sec)" $START_TIME)"
 
-# Print summary
+############## Print summary and timing
 verbose_section SUMMARY
 log "$SUCCESS $(noun "$SUCCESS" command) succeeded"
 log "All $NUM_CMDS commands finished in $TOTAL_TIME $(noun "$TOTAL_TIME" second)"

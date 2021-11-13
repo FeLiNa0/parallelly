@@ -7,31 +7,37 @@ set -eu
 
 ############## Constants
 SCRIPT_NAME="parallely"
+VERSION=1.3.0
+
+############## Constants, but they might become configurable
 DEFAULT_CMD_SHELL="sh"
 CMD_SHELL_ARGS="-c"
 SHOW_FAILED_CMD_OUTPUT_DEFAULT="tail -n1"
-VERSION=1.3.0
+NO_OUTPUT_INDICATOR="(no output)"
+NO_EOF_NEWLINE_INDICATOR="(no newline at end of output)"
 
 ############## Configurable environment variables
 CMD_SHELL="${CMD_SHELL-$DEFAULT_CMD_SHELL}"
 CMD_SHELL_WITH_ARGS="$CMD_SHELL $CMD_SHELL_ARGS"
 
-if [ "${VERBOSE-}" != "" ]; then
+if ! [ -z "${VERBOSE-}" ]; then
   PARALLELY_VERBOSE_OUTPUT="$VERBOSE"
 fi
 PARALLELY_VERBOSE_OUTPUT="${PARALLELY_VERBOSE_OUTPUT-false}"
 
-if [ "${SHOW_FAILED_CMD_OUTPUT-}" = "" ]; then
+if [ -z "${SHOW_FAILED_CMD_OUTPUT-}" ]; then
   SHOW_FAILED_CMD_OUTPUT="$SHOW_FAILED_CMD_OUTPUT_DEFAULT"
 fi
 
-# If $DISPLAY is not set, only use CLI to notify about commands finishing
+# If $DISPLAY is not set
+# use CLI to notify about commands finishing
 if [ -z "${DISPLAY-}" ]; then
-  CLI_NOTIFY=true
+  CLI_NOTIFY="${CLI_NOTIFY-true}"
 fi
 CLI_NOTIFY="${CLI_NOTIFY-false}"
 
-if [ "${NOTIFY_COMMAND-}" = "" ]; then
+
+if [ -z "${NOTIFY_COMMAND-}" ]; then
   if [ "$CLI_NOTIFY" = true ]; then
     NOTIFY_COMMAND="echo"
   else
@@ -39,7 +45,7 @@ if [ "${NOTIFY_COMMAND-}" = "" ]; then
   fi
 fi
 
-if [ "${FAILURE_NOTIFY_COMMAND-}" = "" ]; then
+if [ -z "${FAILURE_NOTIFY_COMMAND-}" ]; then
   if [ "$CLI_NOTIFY" = true ]; then
     FAILURE_NOTIFY_COMMAND="echo" 
   else
@@ -47,11 +53,19 @@ if [ "${FAILURE_NOTIFY_COMMAND-}" = "" ]; then
   fi
 fi
 
-# If output is not a tty, disable colors
+# If output is not a tty
+# disable colors
 if ! [ -t 1 ]; then
-  ENABLE_COLORS=false
+  ENABLE_COLORS="${ENABLE_COLORS-false}"
 fi
 ENABLE_COLORS="${ENABLE_COLORS-true}"
+
+# If output is not a tty or DISPLAY is unset
+# don't show emoji
+if ! [ -t 1 ] || [ -z "${DISPLAY-}" ]; then
+  PARALLELY_EMOJI_OUTPUT="${PARALLELY_EMOJI_OUTPUT-false}"
+fi
+PARALLELY_EMOJI_OUTPUT="${PARALLELY_EMOJI_OUTPUT-true}"
 
 ############## Other variables
 NUM_CMDS="$(($# / 2 ))"
@@ -60,6 +74,11 @@ CURRENT_CMD=0
 CMD_OUT_DIR="$(mktemp --directory)/$SCRIPT_NAME-logs-$(whoami)-$(date +%Y-%m-%d)"
 mkdir -p "$CMD_OUT_DIR"
 
+NEWLINE_AFTER_EVERY_ERROR=false
+if [ "$PARALLELY_VERBOSE_OUTPUT" = true ]; then
+  NEWLINE_AFTER_EVERY_ERROR=true
+fi
+
 # Stores array of PIDs of commands that were started
 pids=()
 
@@ -67,6 +86,7 @@ pids=()
 # TODO use tput
 BLUE=34
 RED=31
+GREY=37
 NONE=0
 color() {
   if [ "$ENABLE_COLORS" = true ]; then
@@ -74,15 +94,41 @@ color() {
   fi
 }
 
+emoji() {
+  if [ "$PARALLELY_EMOJI_OUTPUT" != true ]; then
+    exit 0
+  fi
+
+  trailer=' '
+  if [ "${2-}" = nospace ]; then
+    trailer=
+  fi
+  character=
+  case "$1" in
+    checkmark) character='✅' ;;
+    error) character='❌' ;;
+    rocket) character='🚀' ;;
+  esac
+  if [ -z "$character" ]; then
+    error Unknown emoji "$1"
+  fi
+  printf "%s%s" "$character" "$trailer"
+}
+
 log() {
   echo -e "$@"
 }
 
+log_color() {
+  color "$1"
+  shift
+  log "$@"
+  color "$NONE"
+}
+
 verbose() {
   if [ "$PARALLELY_VERBOSE_OUTPUT" = true ] ; then
-    color "$BLUE"
-    log "$@"
-    color "$NONE"
+    log_color "$BLUE" "$@"
   fi
 }
 
@@ -99,10 +145,16 @@ verbose_section() {
   fi
 }
 
-error() {
+# Logs to stderr
+error_section() {
   color "$RED"
-  log ERROR "$@" >&2
+  section "$@" >&2
   color "$NONE"
+}
+
+# Logs to stderr
+error() {
+  log_color "$RED" "$(emoji error)ERROR" "$@" >&2
 }
 
 time_in_sec() {
@@ -150,16 +202,15 @@ help() {
   echo "        Whether to print verbose logs."
   printf '%s' \
        "        If colors are enabled, logs are "
-  color "$BLUE"
-  echo "colored."
-  color "$NONE"
+  log_color "$BLUE" "colored."
   echo "        Default: false or value of \$VERBOSE if it is set"
+  echo "    \$PARALLELY_EMOJI_OUTPUT:"
+  echo "        Whether to print emoji."
+  echo "        Default: true if output is a tty and \$DISPLAY is set, false otherwise."
   echo "    \$ENABLE_COLORS: "
   printf '%s' \
        "        If enabled, errors are "
-  color "$RED"
-  echo "colored."
-  color "$NONE"
+  log_color "$RED" "colored."
   echo "        Default: true if output is a tty, false otherwise."
   echo "    \$SHOW_FAILED_CMD_OUTPUT:"
   echo "        Command for printing stderr and stdout of failed command/"
@@ -188,7 +239,12 @@ help() {
   echo "Examples:"
   echo
   echo "  Multiple commands:"
-  echo "    $SCRIPT_NAME test-exit 'echo failure && exit 1' printf-abc 'printf \"%s %s\" abc 123' rsync-src 'rsync -rhP src backup'"
+  echo "    $SCRIPT_NAME fail 'echo failure && exit 1' \\"
+  echo "      fail-printf-nonewline 'printf \"%s %s\"\\ abc 123 ; false' \\"
+  echo "      fail-rsync-src 'rsync -rhP nonexistentdir backup' \\"
+  echo "      delay 'sleep 0.2' \\"
+  echo "      fail-slower-delay '! sleep 0.4' \\"
+  echo "      fail-no-output 'exit 210'"
   echo
   echo "    The odd numbered arguments are short, filesafe names for each command." 
   echo "    The names are used in notifications and files storing outout."
@@ -198,6 +254,7 @@ help() {
   echo
   echo "  Verbose output and a command without arguments:"
   echo "    VERBOSE=true $SCRIPT_NAME list-files ls"
+  echo "    PARALLELY_VERBOSE_OUTPUT=true $SCRIPT_NAME list-files ls"
   echo
   echo "  A command with arguments:"
   echo "    $SCRIPT_NAME rsync-src 'rsync -rhP src backup'"
@@ -266,10 +323,14 @@ run_cmd() {
   verbose "Starting $NAME command $CURRENT_CMD/$NUM_CMDS:" "$CMD_SHELL_WITH_ARGS" "$COMMAND"
 }
 
-log "$SCRIPT_NAME will run $NUM_CMDS commands in parallel"
+log "$SCRIPT_NAME will run $NUM_CMDS commands in parallel $(emoji rocket)"
 
 verbose_section Configuration
 verbose "PARALLELY_VERBOSE_OUTPUT=$PARALLELY_VERBOSE_OUTPUT"
+if ! [ -z "${VERBOSE-}" ]; then
+  verbose "PARALLELY_VERBOSE_OUTPUT set from VERBOSE"
+fi
+verbose "PARALLELY_EMOJI_OUTPUT=$PARALLELY_EMOJI_OUTPUT"
 verbose "CMD_SHELL=$CMD_SHELL"
 verbose "SHOW_FAILED_CMD_OUTPUT=$SHOW_FAILED_CMD_OUTPUT"
 verbose "NOTIFY_COMMAND=$NOTIFY_COMMAND"
@@ -297,18 +358,22 @@ done
 verbose
 
 ############## Wait for commands and show results, especially from failed commands
-
 show_output() {
   # Print output of a command
   OUTPUT_NAME="$1"
   NAME="$2"
   FILE="$3"
-  if [ "$(cat "$FILE")" = "" ]; then
-    echo "No $OUTPUT_NAME output for failed command $NAME"
+  printf "%s" "$OUTPUT_NAME output for failed command $NAME:"
+  if [ -z "$(cat "$FILE")" ]; then
+    log_color "$GREY" " $NO_OUTPUT_INDICATOR"
   else
-    echo "$OUTPUT_NAME output for failed command $NAME:"
+    log
     verbose "$SHOW_FAILED_CMD_OUTPUT" "$FILE"
     $SHOW_FAILED_CMD_OUTPUT "$FILE"
+    if [ "$(tail -c1 "$FILE")" != "$(echo -e "\n")" ]; then
+      log
+      log_color "$GREY" "$NO_EOF_NEWLINE_INDICATOR"
+    fi
   fi
 }
 
@@ -335,42 +400,55 @@ FAILURE=false
 FAILED_CMDS=""
 FAILURES=0
 SUCCESS=0
+failedpids=()
 # Wait for commands
 verbose_section Waiting for commands to finish
 verbose Will list successful and failed commands.
 verbose
 for PID in "${pids[@]}"; do
+  if wait "$PID"; then
+    SUCCESS="$((SUCCESS + 1))"
+    if [ "$SUCCESS" = 1 ]; then
+      verbose_section "Successful command(s)"
+    fi
+
+    NAME="$(cat "$CMD_OUT_DIR/$PID")"
+    OUTPUT_FILES="$CMD_OUT_DIR/$NAME.stderr\n$CMD_OUT_DIR/$NAME.stdout"
+    verbose "$(emoji checkmark)Command $NAME succeeded. Output in:\n$OUTPUT_FILES"
+    verbose
+  else
+    FAILURE=true
+    failedpids+=("$PID")
+  fi
+done
+
+for PID in "${failedpids[@]}"; do
+  FAILURES="$((FAILURES + 1))"
   NAME="$(cat "$CMD_OUT_DIR/$PID")"
+  FAILED_CMDS="$NAME $FAILED_CMDS"
+
+  if [ "$FAILURES" = 1 ]; then
+    error_section "Failed command $(noun "${#failedpids}" output)"
+  fi
+
   STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
   STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
-  OUTPUT_FILES="$STDOUT_FILE\n$STDERR_FILE"
-  if ! wait "$PID"; then
-    if [ "$FAILURES" = 0 ]; then
-      color "$RED"
-      section "Failed command output(s)"
-      color "$NONE"
-      verbose
-    fi
-    error "Failure in command $NAME. Output in:\n$OUTPUT_FILES"
-    show_output STDERR "$NAME" "$STDERR_FILE"
-    show_output STDOUT "$NAME" "$STDOUT_FILE"
-    FAILURE=true
-    FAILURES="$((FAILURES + 1))"
-    FAILED_CMDS="$NAME $FAILED_CMDS"
-  else
-    SUCCESS="$((SUCCESS + 1))"
-    verbose "Command $NAME succeeded. Output in:\n$OUTPUT_FILES"
+  OUTPUT_FILES="$STDERR_FILE\n$STDOUT_FILE"
+  error "Failure in command $NAME. Output in:\n$OUTPUT_FILES"
+  show_output STDERR "$NAME" "$STDERR_FILE"
+  show_output STDOUT "$NAME" "$STDOUT_FILE"
+  if [ "$NEWLINE_AFTER_EVERY_ERROR" = true ]; then
+    log
   fi
-  verbose
 done
 
 TOTAL_TIME="$(subtract_two_floats "$(time_in_sec)" $START_TIME)"
 
 ############## Print summary and timing
 verbose_section SUMMARY
-log "$SUCCESS $(noun "$SUCCESS" command) succeeded"
-log "All $NUM_CMDS commands finished in $TOTAL_TIME $(noun "$TOTAL_TIME" second)"
+verbose "$SUCCESS $(noun "$SUCCESS" command) succeeded"
+log "$NUM_CMDS $(noun "$NUM_CMDS" command) finished in $TOTAL_TIME $(noun "$TOTAL_TIME" second)"
 if [ "$FAILURE" = true ]; then
-  error "$FAILURES/$NUM_CMDS commands failed: $FAILED_CMDS"
+  error "$FAILURES/$NUM_CMDS $(noun "$FAILURES" command) failed: $FAILED_CMDS"
   exit 1
 fi

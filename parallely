@@ -22,7 +22,7 @@ if [ "${SHOW_FAILED_CMD_OUTPUT-}" = "" ]; then
 fi
 
 # If $DISPLAY is not set, only use CLI to notify about commands finishing
-if [ -z "$DISPLAY" ]; then
+if [ -z "${DISPLAY-}" ]; then
   CLI_NOTIFY=true
 fi
 CLI_NOTIFY="${CLI_NOTIFY-false}"

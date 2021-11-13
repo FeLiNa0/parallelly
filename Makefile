@@ -22,6 +22,8 @@ release:
 	git commit -am "Bump version to $(VERSION)" -m "$(TITLE)" || echo Version is bumped and README is up to date.
 	git push
 	gh release create --target main "v$(VERSION)" --title "v$(VERSION) $(TITLE)" $(SHELLSCRIPT)
+	# Pull new tag
+	git remote update
 
 install:
 	cp ${SHELLSCRIPT} /usr/bin/

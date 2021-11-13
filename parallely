@@ -71,7 +71,7 @@ color() {
 }
 
 log() {
-  echo "$@"
+  echo -e "$@"
 }
 
 verbose() {
@@ -79,6 +79,19 @@ verbose() {
     color "$BLUE"
     log "$@"
     color "$NONE"
+  fi
+}
+
+section() {
+  color 3
+  color 1
+  log ============= "$@" =============
+  color "$NONE"
+}
+
+verbose_section() {
+  if [ "$VERBOSE" = true ] ; then
+    section "$@"
   fi
 }
 
@@ -230,18 +243,24 @@ run_cmd() {
 }
 
 verbose "Starting $SCRIPT_NAME with $NUM_CMDS commands"
+
+verbose_section Configuration
 verbose "VERBOSE=$VERBOSE"
 verbose "CMD_SHELL=$CMD_SHELL"
 verbose "SHOW_FAILED_CMD_OUTPUT=$SHOW_FAILED_CMD_OUTPUT"
 verbose "NOTIFY_COMMAND=$NOTIFY_COMMAND"
 verbose "FAILURE_NOTIFY_COMMAND=$FAILURE_NOTIFY_COMMAND"
 verbose "ENABLE_COLORS=$ENABLE_COLORS"
+verbose "Saving command output in CMD_OUT_DIR=$CMD_OUT_DIR"
+verbose 
 
 ############## Main loop
 
 # Iterate through all given command line arguments.
 # Run each one as a command in parallel, saving its output to a tmp file.
+verbose_section Starting commands
 while [ "$#" -gt 0 ]; do
+  # TODO what if name is not unique?
   NAME="$1"
   COMMAND="$2"
   CURRENT_CMD="$(( CURRENT_CMD + 1))"
@@ -249,6 +268,8 @@ while [ "$#" -gt 0 ]; do
   shift
   run_cmd "$NAME" "$COMMAND"
 done
+
+verbose
 
 ############## Wait for commands and show results, especially from failed commands
 
@@ -263,7 +284,6 @@ show_output() {
     echo "$OUTPUT_NAME output for failed command $NAME:"
     verbose "$SHOW_FAILED_CMD_OUTPUT" "$FILE"
     $SHOW_FAILED_CMD_OUTPUT "$FILE"
-    echo
   fi
 }
 
@@ -272,24 +292,32 @@ FAILED_CMDS=""
 FAILURES=0
 SUCCESS=0
 # Wait for commands
+verbose_section Waiting for commands to finish
+verbose Will list successful and failed commands.
+verbose
 for PID in "${pids[@]}"; do
   NAME="$(cat "$CMD_OUT_DIR/$PID")"
   STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
   STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
-  OUTPUT_FILES="$STDOUT_FILE $STDERR_FILE"
+  OUTPUT_FILES="$STDOUT_FILE\n$STDERR_FILE"
   if ! wait "$PID"; then
+    if [ "$FAILURES" = 0 ]; then
+      color "$RED"
+      section "Failed command output(s)"
+      color "$NONE"
+      verbose
+    fi
+    error "Failure in command $NAME. Output in:\n$OUTPUT_FILES"
     show_output STDERR "$NAME" "$STDERR_FILE"
     show_output STDOUT "$NAME" "$STDOUT_FILE"
-    error "Failure in command $NAME pid=$PID"
-    error "Output files: $OUTPUT_FILES"
     FAILURE=true
     FAILURES="$((FAILURES + 1))"
     FAILED_CMDS="$NAME $FAILED_CMDS"
   else
     SUCCESS="$((SUCCESS + 1))"
-    verbose "Command $NAME succeeded"
-    verbose "Output files: $OUTPUT_FILES"
+    verbose "Command $NAME succeeded. Output in:\n$OUTPUT_FILES"
   fi
+  verbose
 done
 
 command_noun() {
@@ -301,8 +329,9 @@ command_noun() {
 }
 
 # Print summary
-echo "$SUCCESS $(command_noun "$SUCCESS") out of $NUM_CMDS ran successfully"
+verbose_section SUMMARY
+echo "$SUCCESS $(command_noun "$SUCCESS") succeeded"
 if [ "$FAILURE" = true ]; then
-  error "$FAILURES $(command_noun "$FAILURES") out of $NUM_CMDS could not run: $FAILED_CMDS"
+  error "$FAILURES/$NUM_CMDS commands failed: $FAILED_CMDS"
   exit 1
 fi

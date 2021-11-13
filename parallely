@@ -412,7 +412,7 @@ show_output() {
   OUTPUT_NAME="$2"
   NAME="$3"
   FILE="$4"
-  printf "%s" "$OUTPUT_NAME output for $DISPOSITION command $NAME:"
+  printf "%s" "$(color "$BLUE")$OUTPUT_NAME$(color "$NONE") output for $DISPOSITION command $NAME:"
   if [ -z "$(cat "$FILE")" ]; then
     log_color "$GREY" " $NO_OUTPUT_INDICATOR"
   else

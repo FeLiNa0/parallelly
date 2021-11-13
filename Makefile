@@ -11,13 +11,15 @@ build-readme:
 	./utils/generate_readme.py ./README.template.md > ./README.md
 
 release:
-	# Check version and title are set and valid
-	@[ "$(TITLE)" != "" ] || (echo Please set the title with \`make TITLE=...\`; false)
-	@echo "$(VERSION)" | grep '^[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?$$' || (echo Must pass version string as \`make VERSION=XX.YY[.ZZ]\`; false)
+	# Checking that title is set
+	@[ "$(TITLE)" != "" ] || (echo Please set the title with \`making thate TITLE=...\`; false)
+	# Checking that version is set and valid
+	@echo "$(VERSION)" | grep '^[0-9]\+\.[0-9]\+\(\.[0-9]\+\)\?$$' > /dev/null || (echo Must pass version string as \`making thate VERSION=XX.YY[.ZZ]\`; false)
+	# Checking that no changes need to be committed.
+	@[ "$(shell git status --porcelain | wc -l)" = 0 ] || (echo Please commit all your changes first. ; false )
 	./utils/bump-version.sh "$(VERSION)"
 	make build-readme
-	@[ "$(git status --porcelain | wc -l)" = 0 ] || (echo Please commit all your changes first. ; false )
-	git commit -m "Bump version to $(VERSION)" -m "$(TITLE)"
+	git commit -am "Bump version to $(VERSION)" -m "$(TITLE)" || echo Version is bumped and README is up to date.
 	git push
 	gh release create --target main "v$(VERSION)" --title "v$(VERSION) $(TITLE)" $(SHELLSCRIPT)
 

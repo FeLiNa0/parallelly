@@ -30,7 +30,8 @@ install-to-user:
 	./tests/test-install.sh $(HOME)/bin
 
 install-symlink-to-user:
-	ln -s "$(PWD)/${SHELLSCRIPT}" "$(HOME)/bin/"
+	unlink "$(HOME)/bin/${SHELLSCRIPT}" || true
+	ln -s "$(PWD)/${SHELLSCRIPT}" "$(HOME)/bin/${SHELLSCRIPT}"
 	./tests/test-install.sh $(HOME)/bin
 
 uninstall:

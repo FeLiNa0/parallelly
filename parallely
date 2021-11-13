@@ -1,27 +1,44 @@
 #!/usr/bin/env bash
 
+# TODO mark each global variable
+# TODO are there local variables in POSIX shellscripts?
+
 ############## Shell flags
 # Exit on error, undeclared variable reference, and set pipeline exit code
 # to that of failing command.
 set -eu
 
+# Enable for debugging:
+DEBUG="${DEBUG-false}"
+TRACE="${TRACE-false}"
+
+if [ "$TRACE" = true ]; then
+  set -x
+fi
+
 ############## Constants
 SCRIPT_NAME="parallely"
 VERSION=1.6.0
 
+############## Exit codes
+NO_ARGUMENTS_EXIT_CODE=89
+NOT_ENOUGH_ARGUMENTS_EXIT_CODE=87
+REPEATED_NAME_EXIT_CODE=86
+MISSING_OPTARG_EXIT_CODE=85
+UNKNOWN_LONG_OPTION_EXIT_CODE=81
+UNKNOWN_SHORT_OPTION_EXIT_CODE=82
+COMPOUND_SHORT_OPTION_EXIT_CODE=83
+COMMANDS_FAILED_EXIT_CODE=2
+
 ############## Constants, but they might become configurable
 DEFAULT_CMD_SHELL="sh"
-CMD_SHELL_ARGS="-c"
+DEFAULT_CMD_SHELL_ARGS="-c"
 SHOW_CMD_OUTPUT_CMD_DEFAULT="tail -n1"
 NO_OUTPUT_INDICATOR="(no output)"
 NO_EOF_NEWLINE_INDICATOR="(no newline at end of output)"
 
-############## Configurable environment variables
-CMD_SHELL="${CMD_SHELL-$DEFAULT_CMD_SHELL}"
-CMD_SHELL_WITH_ARGS="$CMD_SHELL $CMD_SHELL_ARGS"
-
-FORCE_SEQUENTIAL="${FORCE_SEQUENTIAL-false}"
-
+############## Configurable environment variables.
+# These should be in the same order as the argument parser and the documentation
 if [ -n "${VERBOSE-}" ]; then
   PARALLELY_VERBOSE_OUTPUT="$VERBOSE"
 fi
@@ -31,6 +48,24 @@ if [ -n "${ALL_OUTPUT-}" ]; then
   PARALLELY_SHOW_ALL_OUTPUT="$ALL_OUTPUT"
 fi
 PARALLELY_SHOW_ALL_OUTPUT="${PARALLELY_SHOW_ALL_OUTPUT-$PARALLELY_VERBOSE_OUTPUT}"
+
+# If output is not a tty or DISPLAY is unset
+# don't show emoji
+if ! [ -t 1 ] || [ -z "${DISPLAY-}" ]; then
+  PARALLELY_EMOJI_OUTPUT="${PARALLELY_EMOJI_OUTPUT-false}"
+fi
+PARALLELY_EMOJI_OUTPUT="${PARALLELY_EMOJI_OUTPUT-true}"
+
+FORCE_SEQUENTIAL="${FORCE_SEQUENTIAL-false}"
+
+# If output is not a tty
+# disable colors
+if ! [ -t 1 ]; then
+  ENABLE_COLORS="${ENABLE_COLORS-false}"
+fi
+ENABLE_COLORS="${ENABLE_COLORS-true}"
+
+CMD_SHELL="${CMD_SHELL-$DEFAULT_CMD_SHELL $DEFAULT_CMD_SHELL_ARGS}"
 
 if [ -z "${SHOW_CMD_OUTPUT_CMD-}" ]; then
   SHOW_CMD_OUTPUT_CMD="$SHOW_CMD_OUTPUT_CMD_DEFAULT"
@@ -60,36 +95,19 @@ if [ -z "${FAILURE_NOTIFY_COMMAND-}" ]; then
   fi
 fi
 
-# If output is not a tty
-# disable colors
-if ! [ -t 1 ]; then
-  ENABLE_COLORS="${ENABLE_COLORS-false}"
-fi
-ENABLE_COLORS="${ENABLE_COLORS-true}"
-
-# If output is not a tty or DISPLAY is unset
-# don't show emoji
-if ! [ -t 1 ] || [ -z "${DISPLAY-}" ]; then
-  PARALLELY_EMOJI_OUTPUT="${PARALLELY_EMOJI_OUTPUT-false}"
-fi
-PARALLELY_EMOJI_OUTPUT="${PARALLELY_EMOJI_OUTPUT-true}"
+SHOW_CONFIGURATION="${SHOW_CONFIGURATION-false}" 
 
 ############## Other variables
-NUM_CMDS="$(($# / 2 ))"
 CURRENT_CMD=0
 
 CMD_OUT_DIR="$(mktemp --directory)/$SCRIPT_NAME-logs-$(whoami)-$(date +%Y-%m-%d)"
 mkdir -p "$CMD_OUT_DIR"
 
-NEWLINE_AFTER_EVERY_ERROR=false
-if [ "$PARALLELY_VERBOSE_OUTPUT" = true ]; then
-  NEWLINE_AFTER_EVERY_ERROR=true
-fi
-
 # Stores array of PIDs of commands that were started
+# Due to POSIX compatibility, we can't use arrays.
 pids=""
 
-############## Utility functions
+############## Functions to help generate output
 # TODO use tput
 BLUE=34
 RED=31
@@ -103,7 +121,7 @@ color() {
 
 emoji() {
   if [ "$PARALLELY_EMOJI_OUTPUT" != true ]; then
-    exit 0
+    return 0
   fi
 
   trailer=' '
@@ -136,6 +154,12 @@ log_color() {
 verbose() {
   if [ "${FORCE_LOG-false}" = true ] || [ "$PARALLELY_VERBOSE_OUTPUT" = true ] ; then
     log_color "$BLUE" "$@"
+  fi
+}
+
+debug() {
+  if [ "${DEBUG-}" = true ]; then
+    echo "$@"
   fi
 }
 
@@ -184,6 +208,9 @@ noun() {
 
 ############## Help
 help() {
+  # I tried changing this to one large multi-line string, but it messes with
+  # my editor's syntax highlighting and I can't move the function to the end
+  # of the file without more complicated code.
   echo "Description:"
   echo "    Run commands in parallel and capture output. Notify on each completion."
   echo
@@ -194,66 +221,72 @@ help() {
   echo "    See examples in section below."
   echo
   echo "USAGE:"
-  echo "    $SCRIPT_NAME -h|--help|-v|--version"
-  echo "    $SCRIPT_NAME [cmd_name cmd_with_arguments]+"
+  echo "    $SCRIPT_NAME -h|--help|-v|--version|<other options> [cmd_name cmd_with_arguments]+"
   echo
   echo "    One or more pairs of cmd_name followed by cmd_with_arguments are expected."
   echo
-  echo "    -h|--help            Print this message."
-  echo "    -v|--version         Print version of this script."
   echo "    cmd_name             A short and filesafe name for the following command."
   echo "                         Used in notifications and files storing output."
   echo "                         A cmd_with_arguments should always follow these args."
   echo "    cmd_with_arguments   An escaped command to run in parallel"
   echo
-  echo "Environment variables:"
-  echo "  Output:"
-  echo "    \$PARALLELY_VERBOSE_OUTPUT:"
+  echo "    -h|--help            Print this message."
+  echo "    -v|--version         Print version of this script."
+  echo
+  echo "Configuration:"
+  echo "  Options take priority over environment variables."
+  echo "  Use --show-configuration or --verbose to see configuration."
+  echo
+  echo "  Output configuration:"
+  echo "    --verbose|-V|--no-verbose or set \$PARALLELY_VERBOSE_OUTPUT=true:"
   echo "        Whether to print verbose logs."
   printf '%s' \
        "        If colors are enabled, logs are "
   log_color "$BLUE" "colored."
   echo "        Default: false or value of \$VERBOSE if it is set"
-  echo "    \$PARALLELY_EMOJI_OUTPUT:"
-  echo "        Whether to print emoji."
-  echo "        Default: true if output is a tty and \$DISPLAY is set, false otherwise."
-  echo "    \$PARALLELY_SHOW_ALL_OUTPUT:"
+  echo "    --all-output|-a|--not-all-output or set \$PARALLELY_SHOW_ALL_OUTPUT=true:"
   echo "        Whether to print command output for successful commands too."
   echo "        Default: false or value of \$ALL_OUTPUT if it is set"
-  echo "    \$ENABLE_COLORS: "
+  echo "    --emoji|-e|--no-emoji|-z or set \$PARALLELY_EMOJI_OUTPUT=true:"
+  echo "        Whether to print emoji."
+  echo "        Default: true if output is a tty and \$DISPLAY is set, false otherwise."
+  echo "    --color|-c|--no-color|-n or set \$ENABLE_COLORS=true: "
   printf '%s' \
        "        If enabled, errors are "
   log_color "$RED" "colored."
   echo "        Default: true if output is a tty, false otherwise."
-  echo "    \$SHOW_CMD_OUTPUT_CMD:"
+  echo "    --command-output-command or set \$SHOW_CMD_OUTPUT_CMD:"
   echo "        Command for printing stderr and stdout of a command/"
   echo "        Default: $SHOW_CMD_OUTPUT_CMD_DEFAULT"
   echo "        Example values:"
   echo "          Show all output: cat"
   echo "          Show last ten lines: tail -n10"
   echo "          Show output for each command one at a time: less"
-  echo "  Running commands:"
-  echo "    \$CMD_SHELL:"
-  echo "        Which shell to run the commands in."
-  echo "        Default: $DEFAULT_CMD_SHELL $CMD_SHELL_ARGS"
-  echo "    \$FORCE_SEQUENTIAL:"
+  echo "  Running commands configuration:"
+  echo "    --sequential|-s|--no-sequential or set \$FORCE_SEQUENTIAL=true:"
   echo "        Run commands sequentially instead of in parallel."
   echo "        Useful if you just want to capture output and get notifications."
   echo "        Default: false"
-  echo "  Notifications:"
-  echo "    \$CLI_NOTIFY:"
-  echo "        Whether to use GUI to notify when a command finishes."
-  echo "        Default: false if \$DISPLAY is set, false otherwise."
-  echo "    \$NOTIFY_COMMAND:"
+  echo "    --shell-command or set \$CMD_SHELL:"
+  echo "        Which shell to run the commands in."
+  echo "        Default: $DEFAULT_CMD_SHELL $DEFAULT_CMD_SHELL_ARGS"
+  echo "  Notifications configuration:"
+  echo "    --notify-command or set \$NOTIFY_COMMAND:"
   echo "        Command to notify when a command succeeds."
   echo "        Should take two arguments, each possibly containing spaces."
   echo "        First argument is title, second is a description."
   echo "        Default: echo if \$CLI_NOTIFY is false, GUI command otherwise."
-  echo "    \$FAILURE_NOTIFY_COMMAND:"
+  echo "    --failure-notify-command or set \$FAILURE_NOTIFY_COMMAND:"
   echo "        Command to notify when a command fails."
   echo "        Should take two arguments, each possibly containing spaces."
   echo "        First argument is title, second is a description."
   echo "        Default: echo if \$CLI_NOTIFY is false, more visible GUI command otherwise."
+  echo
+  echo "  Debug only:"
+  echo "    --show-configuration or set \$SHOW_CONFIGURATION=true:"
+  echo "        Print configuration."
+  echo "    set \$DEBUG=true"
+  echo "    set \$TRACE=true to run 'set -x'"
   echo
   echo "Examples:"
   echo
@@ -285,7 +318,7 @@ help() {
   echo "    $SCRIPT_NAME test-exit 'echo failure && exit 1'"
   echo "    $SCRIPT_NAME test-statement 'if true; then echo 1; fi'"
   echo
-  echo "    Commands are run in the $CMD_SHELL shell with: $CMD_SHELL_WITH_ARGS \"\$COMMAND\""
+  echo "    Commands are run in the $DEFAULT_CMD_SHELL by default shell with: $CMD_SHELL \"\$COMMAND\""
   echo
   echo "  Commands are waited one at a time in order:"
   echo "    This means that you should list the fast commands first."
@@ -301,29 +334,6 @@ help() {
   echo "Version: $VERSION"
 }
 
-############## Parse command line arguments
-if [ "$#" = 0 ]; then
-  help
-  error Expected more arguments.
-  exit 0
-fi
-
-if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-  help
-  exit 0
-fi
-
-if [ "$1" = "--version" ] || [ "$1" = "-v" ]; then
-  log "$VERSION"
-  exit 0
-fi
-
-if [ $(($# % 2 )) != 0 ]; then
-  help
-  error Expected even number of arguments.
-  exit 0
-fi
-
 ############## Main functions
 
 run_cmd() {
@@ -334,14 +344,16 @@ run_cmd() {
   STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
   TIME_FILE="$CMD_OUT_DIR/$NAME.time"
 
+  verbose "Starting $NAME command $CURRENT_CMD/$NUM_CMDS"
+  verbose + "$CMD_SHELL" "$COMMAND"
+
   # Run command and then run notify command.
-  # If notify command fails, do not count the command as a failed command
-  # TODO print command that ran in notification. Account for commands
-  # like 
+  # If either notify command fails, do not count the command as a failed command
     ( \
       ( \
-        export START_TIME="$(time_in_sec)"
-        $CMD_SHELL_WITH_ARGS \
+        export START_TIME="$(time_in_sec)" \
+        ; \
+        $CMD_SHELL \
         "$COMMAND" > "$STDOUT_FILE" 2> "$STDERR_FILE" \
         ; \
         export STATUS_CODE="$?" \
@@ -364,34 +376,206 @@ run_cmd() {
   PID="$!"
   pids="$pids $PID"
   PID_FILE="$CMD_OUT_DIR/$PID"
-  COMMAND_FILE="$CMD_OUT_DIR/$NAME.command"
   echo "$NAME" > "$PID_FILE"
-  echo "$COMMAND" > "$COMMAND_FILE"
-  verbose "Starting $NAME command $CURRENT_CMD/$NUM_CMDS"
-  verbose + "$CMD_SHELL_WITH_ARGS" "$COMMAND"
 
   if [ "$FORCE_SEQUENTIAL" = true ]; then
-    log "FORCE_SEQUENTIAL is set: Waiting for $NAME command to finish"
-    wait "$PID"
+    log "FORCE_SEQUENTIAL is set: Waiting for command $NAME to finish"
+    wait "$PID" || true
   fi
 }
 
-log "$SCRIPT_NAME will run $NUM_CMDS commands in parallel $(emoji rocket)"
+############## Parse arguments
 
-verbose_section Configuration
-verbose "PARALLELY_VERBOSE_OUTPUT=$PARALLELY_VERBOSE_OUTPUT"
-if [ -n "${VERBOSE-}" ]; then
-  verbose "PARALLELY_VERBOSE_OUTPUT set from VERBOSE"
+validate_option_argument() {
+  debug "arglog: Validating optarg: \"$ARGUMENT\""
+  if [ -z "$ARGUMENT" ]; then
+    error Option "$OPTION" expected argument
+    exit "$MISSING_OPTARG_EXIT_CODE"
+  fi
+  PARSED_ARGUMENT=true
+}
+
+OPTION=
+ARGUMENT=
+parse_option() {
+  # Parse an individual option.
+  # It can either set a variable, cause the program to exit,
+  # or set the current name or command, which must come in pairs.
+  OPTION="$1"
+  ARGUMENT="${2-}"
+  debug "arglog: Option=\"$OPTION\""
+  case "$OPTION" in
+    --help | -h)
+      help
+      exit 0
+      ;;
+    --version | -v) 
+      log "$VERSION"
+      exit 0
+      ;;
+    --verbose | -V) PARALLELY_VERBOSE_OUTPUT=true ;;
+    --no-verbose) PARALLELY_VERBOSE_OUTPUT=false ;;
+    --all-output | -a) PARALLELY_SHOW_ALL_OUTPUT=true ;;
+    --not-all-output) PARALLELY_SHOW_ALL_OUTPUT=false ;;
+    --emoji | -e) PARALLELY_EMOJI_OUTPUT=true ;;
+    --no-emoji | -z) PARALLELY_EMOJI_OUTPUT=false ;;
+    --color | -c) ENABLE_COLORS=true ;;
+    --no-color | -n) ENABLE_COLORS=false ;;
+    --command-output-command) validate_option_argument "$ARGUMENT" ; SHOW_CMD_OUTPUT_CMD="$ARGUMENT" ;;
+    --sequential | -s) FORCE_SEQUENTIAL=true ;;
+    --no-sequential) FORCE_SEQUENTIAL=false ;;
+    --shell-command) validate_option_argument "$ARGUMENT" ; CMD_SHELL="$ARGUMENT" ;;
+    --notify-command) validate_option_argument "$ARGUMENT" ; NOTIFY_COMMAND="$ARGUMENT" ;;
+    --failure-notify-command) validate_option_argument "$ARGUMENT" ; FAILURE_NOTIFY_COMMAND="$ARGUMENT" ;;
+    --show-configuration) SHOW_CONFIGURATION=true ;;
+    --*=*)
+      error "Long options with argument set with = are not allowed: given $OPTION"
+      log "Use --option argument instead of --option=argument"
+      exit "$UNKNOWN_LONG_OPTION_EXIT_CODE"
+      ;;
+    --*)
+      error Unrecognized option "$OPTION"
+      exit "$UNKNOWN_LONG_OPTION_EXIT_CODE"
+      ;;
+    -*)
+      if [ "$(echo "$OPTION" | wc -c)" -gt 3 ]; then
+        error Compound short options are not allowed: given "$OPTION"
+        log "Use -a -b instead of -ab"
+        exit "$COMPOUND_SHORT_OPTION_EXIT_CODE"
+      else
+        error Unrecognized option "$OPTION"
+        exit "$UNKNOWN_SHORT_OPTION_EXIT_CODE"
+      fi
+      ;;
+    # Indicate option is a name or command
+    *) 
+      if [ "$EXPECTING_ARG" = name ]; then
+        CURRENT_NAME="$OPTION"
+      elif [ "$EXPECTING_ARG" = command ]; then
+        CURRENT_COMMAND="$OPTION"
+      fi
+      return 1 ;;
+  esac
+  return 0
+}
+
+############## Parse command line arguments
+if [ "$#" = 0 ]; then
+  help
+  error No arguments given.
+  exit "$NO_ARGUMENTS_EXIT_CODE"
 fi
-verbose "PARALLELY_EMOJI_OUTPUT=$PARALLELY_EMOJI_OUTPUT"
-verbose "CMD_SHELL=$CMD_SHELL"
-verbose "FORCE_SEQUENTIAL=$FORCE_SEQUENTIAL"
-verbose "SHOW_CMD_OUTPUT_CMD=$SHOW_CMD_OUTPUT_CMD"
-verbose "NOTIFY_COMMAND=$NOTIFY_COMMAND"
-verbose "FAILURE_NOTIFY_COMMAND=$FAILURE_NOTIFY_COMMAND"
-verbose "ENABLE_COLORS=$ENABLE_COLORS"
-verbose "Saving command output in CMD_OUT_DIR=$CMD_OUT_DIR"
-verbose 
+
+NAMES_FILE="$CMD_OUT_DIR/names"
+debug "arglog: Will parse ($#) arguments:"
+for arg in "$@"; do
+  debug "arglog: Argument \"$arg\""
+done
+while [ "$#" -gt 0 ]; do
+  # This code is complicated because we need to parse arbitrary options
+  # among pairs of non-option arguments.
+  CURRENT_NAME=
+  CURRENT_COMMAND=
+  PARSED_ARGUMENT=false 
+  EXPECTING_ARG=name
+
+  # Parse options and loop or parse the name/command and end loop
+  # This code must be duplicated because functions do not have
+  # access to the program's arguments, only their own
+  while [ "$#" -gt 0 ] && parse_option "$1" "${2-}"; do
+    shift
+    if [ "$PARSED_ARGUMENT" = true ]; then
+      debug "arglog: Option $OPTION argument $ARGUMENT was parsed"
+      shift
+    fi
+    PARSED_ARGUMENT=false 
+  done
+  debug "arglog: Remaining ($#)" "$@"
+
+  if [ -n "$CURRENT_NAME" ]; then
+    shift
+  else
+    # All arguments were parsed successfully. End the loop.
+    continue
+  fi
+
+  EXPECTING_ARG=command
+
+  # Parse options and loop or parse the name/command and end loop
+  # This code must be duplicated because functions do not have
+  # access to the program's arguments, only their own
+  while [ "$#" -gt 0 ] && parse_option "$1" "${2-}"; do
+    shift
+    if [ "$PARSED_ARGUMENT" = true ]; then
+      debug "arglog: Option $OPTION argument $ARGUMENT was parsed"
+      shift
+    fi
+    PARSED_ARGUMENT=false 
+  done
+  debug "arglog: Remaining ($#)" "$@"
+  
+  if [ -n "$CURRENT_COMMAND" ]; then
+    shift
+  else
+    # Handle name without a command
+    if [ "$#" = 0 ]; then
+      error "Not enough arguments found! Please write the command for $CURRENT_NAME"
+      log "Are your arguments containing spaces properly escaped?"
+      exit "$NOT_ENOUGH_ARGUMENTS_EXIT_CODE"
+    fi
+  fi
+
+  # Check for repeated names
+  if grep "^$CURRENT_NAME$" "$NAMES_FILE" &> /dev/null; then
+    error "Duplicate name $CURRENT_NAME detected. Please rename."
+    exit "$REPEATED_NAME_EXIT_CODE"
+  fi
+  echo "$CURRENT_NAME" >> "$NAMES_FILE"
+
+  # Save command so it can be accessed by command name.
+  # Since we can't guarantee access to bash arrays, we don't have a way to
+  # save commands that contain whitespace or nested strings properly.
+  COMMAND_FILE="$CMD_OUT_DIR/$CURRENT_NAME.command"
+  echo "$CURRENT_COMMAND" > "$COMMAND_FILE"
+done
+
+NEWLINE_AFTER_EVERY_ERROR=false
+if [ "$PARALLELY_VERBOSE_OUTPUT" = true ]; then
+  NEWLINE_AFTER_EVERY_ERROR=true
+fi
+
+NUM_CMDS="$(cat "$NAMES_FILE" | wc -l)"
+
+############## Print configuration
+
+show_configuration() {
+  section Configuration
+  log "Environment variables may have been overridden by command line options."
+  log
+  log "PARALLELY_VERBOSE_OUTPUT=$PARALLELY_VERBOSE_OUTPUT"
+  log "PARALLELY_SHOW_ALL_OUTPUT=$PARALLELY_SHOW_ALL_OUTPUT"
+  log "PARALLELY_EMOJI_OUTPUT=$PARALLELY_EMOJI_OUTPUT"
+  log "CMD_SHELL=$CMD_SHELL"
+  log "FORCE_SEQUENTIAL=$FORCE_SEQUENTIAL"
+  log "SHOW_CMD_OUTPUT_CMD=$SHOW_CMD_OUTPUT_CMD"
+  log "NOTIFY_COMMAND=$NOTIFY_COMMAND"
+  log "FAILURE_NOTIFY_COMMAND=$FAILURE_NOTIFY_COMMAND"
+  log "ENABLE_COLORS=$ENABLE_COLORS"
+  log "Temporary directory CMD_OUT_DIR=$CMD_OUT_DIR"
+  log
+}
+
+if [ "$FORCE_SEQUENTIAL" = true ]; then
+  RUN_METHOD=sequentially
+else
+  RUN_METHOD='in parallel'
+fi
+
+log "$SCRIPT_NAME will run $NUM_CMDS commands $RUN_METHOD $(emoji rocket)"
+
+if [ "$PARALLELY_VERBOSE_OUTPUT" = true ] || [ "$SHOW_CONFIGURATION" = true ]; then
+  show_configuration
+fi
 
 ############## Main loop
 
@@ -399,14 +583,10 @@ verbose
 # Run each one as a command in parallel, saving its output to a tmp file.
 START_TIME="$(time_in_sec)"
 verbose_section Starting commands
-while [ "$#" -gt 0 ]; do
-  # TODO what if name is not unique?
-  NAME="$1"
-  COMMAND="$2"
+for NAME in $(cat $NAMES_FILE); do
+  COMMAND_FILE="$CMD_OUT_DIR/$NAME.command"
   CURRENT_CMD="$(( CURRENT_CMD + 1))"
-  shift
-  shift
-  run_cmd "$NAME" "$COMMAND"
+  run_cmd "$NAME" "$(cat "$COMMAND_FILE")"
 done
 
 verbose
@@ -455,6 +635,7 @@ FAILURE=false
 FAILED_CMDS=""
 FAILURES=0
 SUCCESS=0
+# Due to POSIX compatibility, we can't use arrays.
 failedpids=""
 # Wait for commands
 verbose_section Waiting for commands to finish
@@ -525,5 +706,5 @@ verbose "$SUCCESS $(noun "$SUCCESS" command) succeeded"
 log "$NUM_CMDS $(noun "$NUM_CMDS" command) finished in $TOTAL_TIME $(noun "$TOTAL_TIME" second)"
 if [ "$FAILURE" = true ]; then
   error "$FAILURES/$NUM_CMDS $(noun "$FAILURES" command) failed: $FAILED_CMDS"
-  exit 1
+  exit "$COMMANDS_FAILED_EXIT_CODE"
 fi

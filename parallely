@@ -12,7 +12,7 @@ VERSION=1.5.0
 ############## Constants, but they might become configurable
 DEFAULT_CMD_SHELL="sh"
 CMD_SHELL_ARGS="-c"
-SHOW_FAILED_CMD_OUTPUT_DEFAULT="tail -n1"
+SHOW_CMD_OUTPUT_CMD_DEFAULT="tail -n1"
 NO_OUTPUT_INDICATOR="(no output)"
 NO_EOF_NEWLINE_INDICATOR="(no newline at end of output)"
 
@@ -32,8 +32,8 @@ if [ -n "${ALL_OUTPUT-}" ]; then
 fi
 PARALLELY_SHOW_ALL_OUTPUT="${PARALLELY_SHOW_ALL_OUTPUT-$PARALLELY_VERBOSE_OUTPUT}"
 
-if [ -z "${SHOW_FAILED_CMD_OUTPUT-}" ]; then
-  SHOW_FAILED_CMD_OUTPUT="$SHOW_FAILED_CMD_OUTPUT_DEFAULT"
+if [ -z "${SHOW_CMD_OUTPUT_CMD-}" ]; then
+  SHOW_CMD_OUTPUT_CMD="$SHOW_CMD_OUTPUT_CMD_DEFAULT"
 fi
 
 # If $DISPLAY is not set
@@ -221,9 +221,9 @@ help() {
        "        If enabled, errors are "
   log_color "$RED" "colored."
   echo "        Default: true if output is a tty, false otherwise."
-  echo "    \$SHOW_FAILED_CMD_OUTPUT:"
-  echo "        Command for printing stderr and stdout of failed command/"
-  echo "        Default: $SHOW_FAILED_CMD_OUTPUT_DEFAULT"
+  echo "    \$SHOW_CMD_OUTPUT_CMD:"
+  echo "        Command for printing stderr and stdout of a command/"
+  echo "        Default: $SHOW_CMD_OUTPUT_CMD_DEFAULT"
   echo "        Example values:"
   echo "          Show all output: cat"
   echo "          Show last ten lines: tail -n10"
@@ -377,7 +377,7 @@ fi
 verbose "PARALLELY_EMOJI_OUTPUT=$PARALLELY_EMOJI_OUTPUT"
 verbose "CMD_SHELL=$CMD_SHELL"
 verbose "FORCE_SEQUENTIAL=$FORCE_SEQUENTIAL"
-verbose "SHOW_FAILED_CMD_OUTPUT=$SHOW_FAILED_CMD_OUTPUT"
+verbose "SHOW_CMD_OUTPUT_CMD=$SHOW_CMD_OUTPUT_CMD"
 verbose "NOTIFY_COMMAND=$NOTIFY_COMMAND"
 verbose "FAILURE_NOTIFY_COMMAND=$FAILURE_NOTIFY_COMMAND"
 verbose "ENABLE_COLORS=$ENABLE_COLORS"
@@ -414,8 +414,8 @@ show_output() {
     log_color "$GREY" " $NO_OUTPUT_INDICATOR"
   else
     log
-    log + "$SHOW_FAILED_CMD_OUTPUT" "$FILE"
-    $SHOW_FAILED_CMD_OUTPUT "$FILE"
+    log + "$SHOW_CMD_OUTPUT_CMD" "$FILE"
+    $SHOW_CMD_OUTPUT_CMD "$FILE"
     if [ "$(tail -c1 "$FILE")" != "$(printf "\n")" ]; then
       log
       log_color "$GREY" "$NO_EOF_NEWLINE_INDICATOR"

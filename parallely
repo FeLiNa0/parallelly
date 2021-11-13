@@ -216,6 +216,9 @@ help() {
   echo "    \$PARALLELY_EMOJI_OUTPUT:"
   echo "        Whether to print emoji."
   echo "        Default: true if output is a tty and \$DISPLAY is set, false otherwise."
+  echo "    \$PARALLELY_SHOW_ALL_OUTPUT:"
+  echo "        Whether to print command output for successful commands too."
+  echo "        Default: false or value of \$ALL_OUTPUT if it is set"
   echo "    \$ENABLE_COLORS: "
   printf '%s' \
        "        If enabled, errors are "

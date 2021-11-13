@@ -38,11 +38,14 @@ Environment variables:
     $PARALLELY_EMOJI_OUTPUT:
         Whether to print emoji.
         Default: true if output is a tty and $DISPLAY is set, false otherwise.
+    $PARALLELY_SHOW_ALL_OUTPUT:
+        Whether to print command output for successful commands too.
+        Default: false or value of $ALL_OUTPUT if it is set
     $ENABLE_COLORS: 
         If enabled, errors are colored.
         Default: true if output is a tty, false otherwise.
-    $SHOW_FAILED_CMD_OUTPUT:
-        Command for printing stderr and stdout of failed command/
+    $SHOW_CMD_OUTPUT_CMD:
+        Command for printing stderr and stdout of a command/
         Default: tail -n1
         Example values:
           Show all output: cat
@@ -62,11 +65,13 @@ Environment variables:
         Default: false if $DISPLAY is set, false otherwise.
     $NOTIFY_COMMAND:
         Command to notify when a command succeeds.
-        Should take one argument that contains spaces.
+        Should take two arguments, each possibly containing spaces.
+        First argument is title, second is a description.
         Default: echo if $CLI_NOTIFY is false, GUI command otherwise.
     $FAILURE_NOTIFY_COMMAND:
         Command to notify when a command fails.
-        Should take one argument.
+        Should take two arguments, each possibly containing spaces.
+        First argument is title, second is a description.
         Default: echo if $CLI_NOTIFY is false, more visible GUI command otherwise.
 
 Examples:
@@ -112,7 +117,7 @@ Examples:
     VERBOSE=true CLI_NOTIFY=true parallely 3 'sleep 2' 2 'sleep 1' 1 'sleep 0.1'
 
 Contributors: Hugo O. Rivera
-Version: 1.5.0
+Version: 1.6.0
 
 ```
 

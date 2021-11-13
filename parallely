@@ -105,6 +105,22 @@ error() {
   color "$NONE"
 }
 
+time_in_sec() {
+  date +%s.%N
+}
+
+float_to_int() {
+  echo "$1" | cut -d\. -f1
+}
+
+noun() {
+  if [ "$(float_to_int "$1")" = 1 ]; then
+    echo "$2"
+  else
+    echo "$2"s
+  fi
+}
+
 ############## Help
 help() {
   echo "Description:"
@@ -266,6 +282,7 @@ verbose
 
 # Iterate through all given command line arguments.
 # Run each one as a command in parallel, saving its output to a tmp file.
+START_TIME="$(time_in_sec)"
 verbose_section Starting commands
 while [ "$#" -gt 0 ]; do
   # TODO what if name is not unique?
@@ -292,6 +309,25 @@ show_output() {
     echo "$OUTPUT_NAME output for failed command $NAME:"
     verbose "$SHOW_FAILED_CMD_OUTPUT" "$FILE"
     $SHOW_FAILED_CMD_OUTPUT "$FILE"
+  fi
+}
+
+subtract_two_floats() {
+  A="$1"
+  B="$2"
+  SUBTRACT_FAILURE=false
+  if command -v awk &> /dev/null; then
+    if ! echo "$A" "$B" | awk '{print $1-$2}'; then
+      error "awk is not working! Please redefine the subtract_two_floats function"
+      SUBTRACT_FAILURE=true
+    fi
+  else
+    error "awk is not available! Please redefine the subtract_two_floats function"
+    SUBTRACT_FAILURE=true
+  fi
+  
+  if [ "$SUBTRACT_FAILURE" = true ]; then
+    echo "$A - $B"
   fi
 }
 
@@ -328,17 +364,12 @@ for PID in "${pids[@]}"; do
   verbose
 done
 
-command_noun() {
-  if [ "$1" -gt 1 ]; then
-    echo commands
-  else
-    echo command
-  fi
-}
+TOTAL_TIME="$(subtract_two_floats "$(time_in_sec)" $START_TIME)"
 
 # Print summary
 verbose_section SUMMARY
-echo "$SUCCESS $(command_noun "$SUCCESS") succeeded"
+log "$SUCCESS $(noun "$SUCCESS" command) succeeded"
+log "All $NUM_CMDS commands finished in $TOTAL_TIME $(noun "$TOTAL_TIME" second)"
 if [ "$FAILURE" = true ]; then
   error "$FAILURES/$NUM_CMDS commands failed: $FAILED_CMDS"
   exit 1

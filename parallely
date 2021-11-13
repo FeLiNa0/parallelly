@@ -342,8 +342,12 @@ run_cmd() {
     &
   PID="$!"
   pids="$pids $PID"
-  echo "$NAME" > "$CMD_OUT_DIR/$PID"
-  verbose "Starting $NAME command $CURRENT_CMD/$NUM_CMDS:" "$CMD_SHELL_WITH_ARGS" "$COMMAND"
+  PID_FILE="$CMD_OUT_DIR/$PID"
+  COMMAND_FILE="$CMD_OUT_DIR/$NAME.command"
+  echo "$NAME" > "$PID_FILE"
+  echo "$COMMAND" > "$COMMAND_FILE"
+  verbose "Starting $NAME command $CURRENT_CMD/$NUM_CMDS"
+  verbose + "$CMD_SHELL_WITH_ARGS" "$COMMAND"
 
   if [ "$FORCE_SEQUENTIAL" = true ]; then
     log "FORCE_SEQUENTIAL is set: Waiting for $NAME command to finish"
@@ -398,7 +402,7 @@ show_output() {
     log_color "$GREY" " $NO_OUTPUT_INDICATOR"
   else
     log
-    verbose "$SHOW_FAILED_CMD_OUTPUT" "$FILE"
+    log + "$SHOW_FAILED_CMD_OUTPUT" "$FILE"
     $SHOW_FAILED_CMD_OUTPUT "$FILE"
     if [ "$(tail -c1 "$FILE")" != "$(printf "\n")" ]; then
       log
@@ -450,7 +454,9 @@ for PID in $pids; do
     NAME="$(cat "$CMD_OUT_DIR/$PID")"
     STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
     STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
-    verbose "$(emoji checkmark)Command $NAME succeeded. Output in:"
+    COMMAND="$(cat "$CMD_OUT_DIR/$NAME.command")"
+    verbose "$(emoji checkmark)Command $NAME succeeded."
+    verbose + "$COMMAND"
     verbose "$STDERR_FILE"
     verbose "$STDOUT_FILE"
     if [ "$PARALLELY_SHOW_ALL_OUTPUT" = true ]; then
@@ -476,7 +482,9 @@ for PID in $failedpids; do
 
   STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
   STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
-  error "Failure in command $NAME. Output in:"
+  COMMAND="$(cat "$CMD_OUT_DIR/$NAME.command")"
+  error "Failure in command $NAME."
+  log + "$COMMAND"
   log "$STDERR_FILE"
   log "$STDOUT_FILE"
   show_output failed STDERR "$NAME" "$STDERR_FILE"

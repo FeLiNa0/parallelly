@@ -124,7 +124,7 @@ help() {
   echo
   echo "    --help|-h            Print this message."
   echo "    cmd_name             A short and filesafe name for the following command."
-  echo "                         Used in notifications and files storing outout."
+  echo "                         Used in notifications and files storing output."
   echo "                         A cmd_with_arguments should always follow these args."
   echo "    cmd_with_arguments   An escaped command to run in parallel"
   echo
@@ -177,7 +177,7 @@ help() {
   echo "    $SCRIPT_NAME list-files ls"
   echo
   echo "  Verbose output and a command without arguments:"
-  echo "    PARALLELY_VERBOSE_OUTPUT=true $SCRIPT_NAME list-files ls"
+  echo "    VERBOSE=true $SCRIPT_NAME list-files ls"
   echo
   echo "  A command with arguments:"
   echo "    $SCRIPT_NAME rsync-src 'rsync -rhP src backup'"
@@ -246,7 +246,7 @@ run_cmd() {
   verbose "Starting $NAME command $CURRENT_CMD/$NUM_CMDS:" "$CMD_SHELL_WITH_ARGS" "$COMMAND"
 }
 
-verbose "Starting $SCRIPT_NAME with $NUM_CMDS commands"
+log "$SCRIPT_NAME will run $NUM_CMDS commands in parallel"
 
 verbose_section Configuration
 verbose "PARALLELY_VERBOSE_OUTPUT=$PARALLELY_VERBOSE_OUTPUT"

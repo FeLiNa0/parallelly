@@ -323,13 +323,25 @@ run_cmd() {
   COMMAND="$2"
   STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
   STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
+  TIME_FILE="$CMD_OUT_DIR/$NAME.time"
 
   # Run command and then run notify command.
   # If notify command fails, do not count the command as a failed command
   # TODO print command that ran in notification. Account for commands
   # like 
-    ( $CMD_SHELL_WITH_ARGS \
+    ( \
+      ( \
+        export START_TIME="$(time_in_sec)"
+        $CMD_SHELL_WITH_ARGS \
         "$COMMAND" > "$STDOUT_FILE" 2> "$STDERR_FILE" \
+        ; \
+        export STATUS_CODE="$?" \
+        ; \
+        echo "$(time_in_sec)" "$START_TIME" | awk '{print $1 - $2}' > "$TIME_FILE" \
+        ; \
+        exit "$STATUS_CODE" \
+        ; \
+      ) \
       && ( \
         $NOTIFY_COMMAND "parallely: $NAME command finished" "$COMMAND" \
         || true \
@@ -454,8 +466,9 @@ for PID in $pids; do
     NAME="$(cat "$CMD_OUT_DIR/$PID")"
     STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
     STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
+    TIME="$(cat "$CMD_OUT_DIR/$NAME.time")"
     COMMAND="$(cat "$CMD_OUT_DIR/$NAME.command")"
-    verbose "$(emoji checkmark)Command $NAME succeeded."
+    verbose "$(emoji checkmark)Command $NAME succeeded in $TIME seconds."
     verbose + "$COMMAND"
     verbose "$STDERR_FILE"
     verbose "$STDOUT_FILE"
@@ -482,8 +495,9 @@ for PID in $failedpids; do
 
   STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
   STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
+  TIME="$(cat "$CMD_OUT_DIR/$NAME.time")"
   COMMAND="$(cat "$CMD_OUT_DIR/$NAME.command")"
-  error "Failure in command $NAME."
+  error "Failure in command $NAME after $TIME seconds"
   log + "$COMMAND"
   log "$STDERR_FILE"
   log "$STDOUT_FILE"

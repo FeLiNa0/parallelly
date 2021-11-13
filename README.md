@@ -25,6 +25,7 @@ USAGE:
 
     --help|-h            Print this message.
     cmd_name             A short and filesafe name for the following command.
+                         Used in notifications and files storing outout.
                          A cmd_with_arguments should always follow these args.
     cmd_with_arguments   An escaped command to run in parallel
 
@@ -32,10 +33,10 @@ Environment variables:
   Output:
     $VERBOSE:
         Whether to print verbose logs.
-        If colors enabled, logs are colored BLUE.
+        If colors are enabled, logs are colored.
         Default: false
     $ENABLE_COLORS: 
-        If enabled, errors are colored RED.
+        If enabled, errors are colored.
         Default: true if output is a tty, false otherwise.
     $SHOW_FAILED_CMD_OUTPUT:
         Command for printing stderr and stdout of failed command/
@@ -62,6 +63,9 @@ Examples:
   Multiple commands:
     parallely test-exit 'echo failure && exit 1' printf-abc 'printf "%s %s" abc 123' rsync-src 'rsync -rhP src backup'
 
+    The odd numbered arguments are short, filesafe names for each command.
+    The names are used in notifications and files storing outout.
+
   A command without arguments:
     parallely list-files ls
 
@@ -81,7 +85,7 @@ Examples:
     Commands are run in the sh shell with: sh -c "$COMMAND"
 
 Contributors: Hugo O. Rivera
-Version: 1.0.0
+Version: 1.1.0
 
 ```
 
@@ -111,6 +115,14 @@ OR
 git clone https://github.com/roguh/parallely.git
 cd parallely
 make install-to-user
+```
+
+OR
+
+```
+git clone https://github.com/roguh/parallely.git
+cd parallely
+make install-symlink-to-user
 ```
 
 <!-- TODO

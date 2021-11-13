@@ -20,6 +20,8 @@ NO_EOF_NEWLINE_INDICATOR="(no newline at end of output)"
 CMD_SHELL="${CMD_SHELL-$DEFAULT_CMD_SHELL}"
 CMD_SHELL_WITH_ARGS="$CMD_SHELL $CMD_SHELL_ARGS"
 
+FORCE_SEQUENTIAL="${FORCE_SEQUENTIAL-false}"
+
 if [ -n "${VERBOSE-}" ]; then
   PARALLELY_VERBOSE_OUTPUT="$VERBOSE"
 fi
@@ -230,6 +232,10 @@ help() {
   echo "    \$CMD_SHELL:"
   echo "        Which shell to run the commands in."
   echo "        Default: $DEFAULT_CMD_SHELL $CMD_SHELL_ARGS"
+  echo "    \$FORCE_SEQUENTIAL:"
+  echo "        Run commands sequentially instead of in parallel."
+  echo "        Useful if you just want to capture output and get notifications."
+  echo "        Default: false"
   echo "  Notifications:"
   echo "    \$CLI_NOTIFY:"
   echo "        Whether to use GUI to notify when a command finishes."
@@ -338,6 +344,11 @@ run_cmd() {
   pids="$pids $PID"
   echo "$NAME" > "$CMD_OUT_DIR/$PID"
   verbose "Starting $NAME command $CURRENT_CMD/$NUM_CMDS:" "$CMD_SHELL_WITH_ARGS" "$COMMAND"
+
+  if [ "$FORCE_SEQUENTIAL" = true ]; then
+    log "FORCE_SEQUENTIAL is set: Waiting for $NAME command to finish"
+    wait "$PID"
+  fi
 }
 
 log "$SCRIPT_NAME will run $NUM_CMDS commands in parallel $(emoji rocket)"
@@ -349,6 +360,7 @@ if [ -n "${VERBOSE-}" ]; then
 fi
 verbose "PARALLELY_EMOJI_OUTPUT=$PARALLELY_EMOJI_OUTPUT"
 verbose "CMD_SHELL=$CMD_SHELL"
+verbose "FORCE_SEQUENTIAL=$FORCE_SEQUENTIAL"
 verbose "SHOW_FAILED_CMD_OUTPUT=$SHOW_FAILED_CMD_OUTPUT"
 verbose "NOTIFY_COMMAND=$NOTIFY_COMMAND"
 verbose "FAILURE_NOTIFY_COMMAND=$FAILURE_NOTIFY_COMMAND"

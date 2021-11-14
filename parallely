@@ -243,7 +243,7 @@ float_to_int() {
 }
 
 noun() {
-  if [ "$(float_to_int "$1")" = 1 ]; then
+  if [ "$1" = 1 ]; then
     echo "$2"
   else
     echo "$2"s

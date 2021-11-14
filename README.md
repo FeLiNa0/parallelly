@@ -14,6 +14,8 @@ Description:
     - Notify if a command succeeds (status code 0) or fails (non-zero status code).
     - Save command outputs to a temporary directory.
     - Print command output if the command fails.
+    - Measures total runtime.
+    - Measures runtime of each command.
 
     See examples in section below.
 
@@ -45,10 +47,19 @@ Configuration:
         Default: false or value of $ALL_OUTPUT if it is set
     --emoji|-e|--no-emoji|-z or set $PARALLELY_EMOJI_OUTPUT=true:
         Whether to print emoji.
+        Use --no-emoji if you see tofu characters (empty boxes), such as
+        '' '' '�' '�'
         Default: true if output is a tty and $DISPLAY is set, false otherwise.
     --color|-c|--no-color|-n or set $ENABLE_COLORS=true: 
         If enabled, errors are colored.
-        Default: true if output is a tty, false otherwise.
+        If enabled, verbose logs are colored.
+        If enabled, some other logs are underemphasized.
+          This color may not show up well on a light background.
+          Use --light-mode in this case.
+        Default: true if output is a tty and tput colors>=8, false otherwise.
+          tput colors = 256
+          is a tty = no
+    --light-mode|--no-light-mode or set $LIGHT_MODE=true: 
     --command-output-command|--cc or set $SHOW_CMD_OUTPUT_CMD:
         Command for printing stderr and stdout of a command
         Default: tail
@@ -90,6 +101,12 @@ Configuration:
     --debug or set $DEBUG=true
     --trace or set $TRACE=true:
         Run 'set -x'
+
+Exit codes:
+    Exit code 0 is success.
+    Exit code 2 indicates some or all commands failed.
+    Other exit codes range from 51 to 90.
+    See source code for an enumeration of all possible exit codes.
 
 Examples:
 
@@ -220,24 +237,36 @@ Run the following commands:
 BASH_COMPAT=31 ./tests/test-integration.sh bash
 ./tests/test-integration.sh zsh
 ```
+-->
 
-### Test results
+## Compatibility testing
 
 ### Linux
 
-Tested using GNU coreutils 9.0 in these shells:
+Tested on Manjaro using GNU coreutils 9.0 in these shells:
 
 - dash 0.5
 - bash 5.1
-- bash 5.1 in bash 3.1 compatibility mode BASH_COMPAT=31
+- bash 5.1 in bash 3.1 compatibility mode `BASH_COMPAT=31`
 - zsh 5.8
 - yash 2.52
 - ksh version 2020.0.0
 
+Tested in various shells:
+
+- kitty 0.23.1
+- xterm 369
+- Termux terminal emulator 0.117
+
+Tested on two OSs:
+
+- Manjaro Linux (updated as of 2021.11)
+- Termux 0.117 on Android 12
+
 ### MacOS
 
-Not tested on MacOS, yet. It should work fine.
--->
+Not tested on MacOS, yet. It might work fine because it is tested on ZSH.
+You will need to set the notify commands if you don't have `notify-send`.
 
 ## Linting and Compatibility Check
 
@@ -246,8 +275,3 @@ Use shellcheck to check shellscripts.
 ```
 make check
 ```
-
-
-## Similar programs
-
-Pytest has good output capturing, xargs is great for running commands in parallel, and the fast rsync parallelization I wrote in my dotfiles repo https://github.com/roguh/confs/blob/4625d6ac8efc1365beb3ef3b0c47e5c4b554cd68/update.sh

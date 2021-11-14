@@ -84,24 +84,36 @@ Run the following commands:
 BASH_COMPAT=31 ./tests/test-integration.sh bash
 ./tests/test-integration.sh zsh
 ```
+-->
 
-### Test results
+## Compatibility testing
 
 ### Linux
 
-Tested using GNU coreutils 9.0 in these shells:
+Tested on Manjaro using GNU coreutils 9.0 in these shells:
 
 - dash 0.5
 - bash 5.1
-- bash 5.1 in bash 3.1 compatibility mode BASH_COMPAT=31
+- bash 5.1 in bash 3.1 compatibility mode `BASH_COMPAT=31`
 - zsh 5.8
 - yash 2.52
 - ksh version 2020.0.0
 
+Tested in various shells:
+
+- kitty 0.23.1
+- xterm 369
+- Termux terminal emulator 0.117
+
+Tested on two OSs:
+
+- Manjaro Linux (updated as of 2021.11)
+- Termux 0.117 on Android 12
+
 ### MacOS
 
-Not tested on MacOS, yet. It should work fine.
--->
+Not tested on MacOS, yet. It might work fine because it is tested on ZSH.
+You will need to set the notify commands if you don't have `notify-send`.
 
 ## Linting and Compatibility Check
 

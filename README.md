@@ -170,8 +170,8 @@ Examples:
     The odd numbered arguments are short, filesafe names for each command.
     The names are used in notifications and files storing outout.
 
-Contributors: Hugo O. Rivera
-Version: 1.8.2
+Add Jet aerobics to your CLI!
+Version: 1.8.3
 
 ```
 
@@ -713,7 +713,7 @@ LIGHT_MODE=true
 Temporary directory CMD_OUT_DIR=/tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14
 
 $ parallely --version
-1.8.2
+1.8.3
 $ parallely --debug
 DEBUG: arglog: Remaining (0)
 DEBUG: PPID=<omitted>

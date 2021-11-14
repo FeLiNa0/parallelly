@@ -379,6 +379,7 @@ help() {
   echo "    --command-output-command|--cc or set \$SHOW_CMD_OUTPUT_CMD:"
   echo "        Command for printing stderr and stdout of a command"
   echo "        If this argument is passed, --cc-args is set to '' by default."
+  echo "        Make sure to pass --cc-args AFTER this argument."
   echo "        Default: $SHOW_CMD_OUTPUT_CMD_DEFAULT"
   echo "    --command-output-command-args|--cc-args or set \$SHOW_CMD_OUTPUT_CMD_ARGS:"
   echo "        Arguments for command for printing stderr and stdout of a command"

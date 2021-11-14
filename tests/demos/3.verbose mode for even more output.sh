@@ -1,4 +1,5 @@
 #!/bin/sh
+set -eu
 echo Use \`-V\` to show more detailed output.
 echo It is helpful to use it in conjunction with \`-a\`.
 echo

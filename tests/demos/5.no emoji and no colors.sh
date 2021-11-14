@@ -1,4 +1,5 @@
 #!/bin/sh
+set -eu
 echo Parallely prints emoji and colors when it seems they could be supported.
 echo To turn them off, use \`--no-color\` and \`--no-emoji\`.
 echo

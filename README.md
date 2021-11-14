@@ -309,7 +309,20 @@ $ parallely long-running 'echo OK >&2 && sleep 0.25' \
     lots-of-output 'cat $(which parallely)' \
     failing 'echo ERROR ; exit 1'
 parallely will run 3 commands in parallel 
-3 commands finished in 0.30689 seconds
+STATUS IS 0
+STATUS IS 1
+STATUS IS 0
+============= Failed command output =============
+ERROR Failure in command failing after 0.0117903 seconds
++ echo ERROR ; exit 1
+/tmp/tmp.sPHkrbg9EN/parallely-logs-hugo-2021-11-14/failing.stderr
+/tmp/tmp.sPHkrbg9EN/parallely-logs-hugo-2021-11-14/failing.stdout
+STDERR output for failed command failing: (no output)
+STDOUT output for failed command failing: 1 lines
++ tail -n1 /tmp/tmp.sPHkrbg9EN/parallely-logs-hugo-2021-11-14/failing.stdout
+ERROR
+3 commands finished in 0.331932 seconds
+ERROR 1/3 command failed: failing 
 
 ```
 
@@ -330,7 +343,17 @@ $ parallely sleep1 'sleep 0.1' \
     sleep9 'sleep 0.1' \
     sleep0 'sleep 0.1'
 parallely will run 10 commands in parallel 
-10 commands finished in 0.33458 seconds
+STATUS IS 0
+STATUS IS 0
+STATUS IS 0
+STATUS IS 0
+STATUS IS 0
+STATUS IS 0
+STATUS IS 0
+STATUS IS 0
+STATUS IS 0
+STATUS IS 0
+10 commands finished in 0.353964 seconds
 + echo
 
 $ parallely --sequential sleep1 'sleep 0.1' \
@@ -345,16 +368,26 @@ $ parallely --sequential sleep1 'sleep 0.1' \
     sleep0 'sleep 0.1'
 parallely will run 10 commands sequentially 
 FORCE_SEQUENTIAL is set: Waiting for command sleep1 to finish
+STATUS IS 0
 FORCE_SEQUENTIAL is set: Waiting for command sleep2 to finish
+STATUS IS 0
 FORCE_SEQUENTIAL is set: Waiting for command sleep3 to finish
+STATUS IS 0
 FORCE_SEQUENTIAL is set: Waiting for command sleep4 to finish
+STATUS IS 0
 FORCE_SEQUENTIAL is set: Waiting for command sleep5 to finish
+STATUS IS 0
 FORCE_SEQUENTIAL is set: Waiting for command sleep6 to finish
+STATUS IS 0
 FORCE_SEQUENTIAL is set: Waiting for command sleep7 to finish
+STATUS IS 0
 FORCE_SEQUENTIAL is set: Waiting for command sleep8 to finish
+STATUS IS 0
 FORCE_SEQUENTIAL is set: Waiting for command sleep9 to finish
+STATUS IS 0
 FORCE_SEQUENTIAL is set: Waiting for command sleep0 to finish
-10 commands finished in 1.34015 second
+STATUS IS 0
+10 commands finished in 1.332 second
 
 ```
 
@@ -368,35 +401,39 @@ $ parallely -a long-running 'echo OK >&2 && sleep 0.25' \
     lots-of-output 'cat $(which parallely)' \
     failing 'echo ERROR ; exit 1'
 parallely will run 3 commands in parallel 
+STATUS IS 0
+STATUS IS 1
+STATUS IS 0
 ============= Successful command(s) =============
-Command long-running succeeded in 0.260103 seconds.
+Command long-running succeeded in 0.261281 seconds.
 + echo OK >&2 && sleep 0.25
-/tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/long-running.stderr
-/tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/long-running.stdout
+/tmp/tmp.eHfxcU5pu1/parallely-logs-hugo-2021-11-14/long-running.stderr
+/tmp/tmp.eHfxcU5pu1/parallely-logs-hugo-2021-11-14/long-running.stdout
 STDERR output for successful command long-running: 1 lines
-+ tail -n1 /tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/long-running.stderr
++ tail -n1 /tmp/tmp.eHfxcU5pu1/parallely-logs-hugo-2021-11-14/long-running.stderr
 OK
 STDOUT output for successful command long-running: (no output)
 
-Command lots-of-output succeeded in 0.0124626 seconds.
+Command lots-of-output succeeded in 0.0106139 seconds.
 + cat $(which parallely)
-/tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
-/tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+/tmp/tmp.eHfxcU5pu1/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
+/tmp/tmp.eHfxcU5pu1/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
 STDERR output for successful command lots-of-output: (no output)
-STDOUT output for successful command lots-of-output: 912 lines
-+ tail -n1 /tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+STDOUT output for successful command lots-of-output: 913 lines
++ tail -n1 /tmp/tmp.eHfxcU5pu1/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
 # End of parallely script
 
-Command failing succeeded in 0.0103636 seconds.
+============= Failed command output =============
+ERROR Failure in command failing after 0.0107141 seconds
 + echo ERROR ; exit 1
-/tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/failing.stderr
-/tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/failing.stdout
-STDERR output for successful command failing: (no output)
-STDOUT output for successful command failing: 1 lines
-+ tail -n1 /tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/failing.stdout
+/tmp/tmp.eHfxcU5pu1/parallely-logs-hugo-2021-11-14/failing.stderr
+/tmp/tmp.eHfxcU5pu1/parallely-logs-hugo-2021-11-14/failing.stdout
+STDERR output for failed command failing: (no output)
+STDOUT output for failed command failing: 1 lines
++ tail -n1 /tmp/tmp.eHfxcU5pu1/parallely-logs-hugo-2021-11-14/failing.stdout
 ERROR
-
-3 commands finished in 0.354863 seconds
+3 commands finished in 0.359843 seconds
+ERROR 1/3 command failed: failing 
 
 ```
 
@@ -432,60 +469,65 @@ NOTIFY_COMMAND_ARGS=
 FAILURE_NOTIFY_COMMAND_ARGS=--urgency=critical
 ENABLE_COLORS=false
 LIGHT_MODE=false
-Temporary directory CMD_OUT_DIR=/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14
+Temporary directory CMD_OUT_DIR=/tmp/tmp.IaC9b1krCS/parallely-logs-hugo-2021-11-14
 
 parallely will run 3 commands in parallel 
 ============= Starting commands =============
 Starting long-running command 1/3
 + sh -c echo OK >&2 && sleep 0.25
 See output at:
-/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/long-running.stderr
-/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/long-running.stdout
+/tmp/tmp.IaC9b1krCS/parallely-logs-hugo-2021-11-14/long-running.stderr
+/tmp/tmp.IaC9b1krCS/parallely-logs-hugo-2021-11-14/long-running.stdout
 Starting lots-of-output command 2/3
 + sh -c cat $(which parallely)
 See output at:
-/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
-/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+/tmp/tmp.IaC9b1krCS/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
+/tmp/tmp.IaC9b1krCS/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
 Starting failing command 3/3
 + sh -c echo ERROR ; exit 1
 See output at:
-/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/failing.stderr
-/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/failing.stdout
+/tmp/tmp.IaC9b1krCS/parallely-logs-hugo-2021-11-14/failing.stderr
+/tmp/tmp.IaC9b1krCS/parallely-logs-hugo-2021-11-14/failing.stdout
 
 ============= Waiting for commands to finish =============
 Will list successful and failed commands.
 
+STATUS IS 1
+STATUS IS 0
+STATUS IS 0
 ============= Successful command(s) =============
-Command long-running succeeded in 0.260984 seconds.
+Command long-running succeeded in 0.260308 seconds.
 + echo OK >&2 && sleep 0.25
-/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/long-running.stderr
-/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/long-running.stdout
+/tmp/tmp.IaC9b1krCS/parallely-logs-hugo-2021-11-14/long-running.stderr
+/tmp/tmp.IaC9b1krCS/parallely-logs-hugo-2021-11-14/long-running.stdout
 STDERR output for successful command long-running: 1 lines
-+ tail -n1 /tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/long-running.stderr
++ tail -n1 /tmp/tmp.IaC9b1krCS/parallely-logs-hugo-2021-11-14/long-running.stderr
 OK
 STDOUT output for successful command long-running: (no output)
 
-Command lots-of-output succeeded in 0.0122392 seconds.
+Command lots-of-output succeeded in 0.0183873 seconds.
 + cat $(which parallely)
-/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
-/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+/tmp/tmp.IaC9b1krCS/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
+/tmp/tmp.IaC9b1krCS/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
 STDERR output for successful command lots-of-output: (no output)
-STDOUT output for successful command lots-of-output: 912 lines
-+ tail -n1 /tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+STDOUT output for successful command lots-of-output: 913 lines
++ tail -n1 /tmp/tmp.IaC9b1krCS/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
 # End of parallely script
 
-Command failing succeeded in 0.0108409 seconds.
+============= Failed command output =============
+ERROR Failure in command failing after 0.0101211 seconds
 + echo ERROR ; exit 1
-/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/failing.stderr
-/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/failing.stdout
-STDERR output for successful command failing: (no output)
-STDOUT output for successful command failing: 1 lines
-+ tail -n1 /tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/failing.stdout
+/tmp/tmp.IaC9b1krCS/parallely-logs-hugo-2021-11-14/failing.stderr
+/tmp/tmp.IaC9b1krCS/parallely-logs-hugo-2021-11-14/failing.stdout
+STDERR output for failed command failing: (no output)
+STDOUT output for failed command failing: 1 lines
++ tail -n1 /tmp/tmp.IaC9b1krCS/parallely-logs-hugo-2021-11-14/failing.stdout
 ERROR
 
 ============= SUMMARY =============
-3 commands succeeded
-3 commands finished in 0.360159 seconds
+2 commands succeeded
+3 commands finished in 0.379436 seconds
+ERROR 1/3 command failed: failing 
 
 ```
 
@@ -501,48 +543,51 @@ By default, only the last line of output is shown.
 ```
 $ parallely -a onlylastline 'printf "a\nb\nc\nd\ne"'
 parallely will run 1 commands in parallel 
+STATUS IS 0
 ============= Successful command(s) =============
-Command onlylastline succeeded in 0.00998235 seconds.
+Command onlylastline succeeded in 0.0102565 seconds.
 + printf "a\nb\nc\nd\ne"
-/tmp/tmp.KEM66irE3G/parallely-logs-hugo-2021-11-14/onlylastline.stderr
-/tmp/tmp.KEM66irE3G/parallely-logs-hugo-2021-11-14/onlylastline.stdout
+/tmp/tmp.520c1rrZv4/parallely-logs-hugo-2021-11-14/onlylastline.stderr
+/tmp/tmp.520c1rrZv4/parallely-logs-hugo-2021-11-14/onlylastline.stdout
 STDERR output for successful command onlylastline: (no output)
 STDOUT output for successful command onlylastline: 4 lines
-+ tail -n1 /tmp/tmp.KEM66irE3G/parallely-logs-hugo-2021-11-14/onlylastline.stdout
++ tail -n1 /tmp/tmp.520c1rrZv4/parallely-logs-hugo-2021-11-14/onlylastline.stdout
 e
 (no newline at end of output)
 
-1 command finished in 0.0717688 seconds
+1 command finished in 0.0663552 seconds
 + echo
 
 $ parallely --cc-args -n3 -a last3lines 'printf "a\nb\nc\nd\ne"'
 parallely will run 1 commands in parallel 
+STATUS IS 0
 ============= Successful command(s) =============
-Command last3lines succeeded in 0.0113878 seconds.
+Command last3lines succeeded in 0.00730848 seconds.
 + printf "a\nb\nc\nd\ne"
-/tmp/tmp.xp2LLipPHY/parallely-logs-hugo-2021-11-14/last3lines.stderr
-/tmp/tmp.xp2LLipPHY/parallely-logs-hugo-2021-11-14/last3lines.stdout
+/tmp/tmp.G4ZDr4Hg86/parallely-logs-hugo-2021-11-14/last3lines.stderr
+/tmp/tmp.G4ZDr4Hg86/parallely-logs-hugo-2021-11-14/last3lines.stdout
 STDERR output for successful command last3lines: (no output)
 STDOUT output for successful command last3lines: 4 lines
-+ tail -n3 /tmp/tmp.xp2LLipPHY/parallely-logs-hugo-2021-11-14/last3lines.stdout
++ tail -n3 /tmp/tmp.G4ZDr4Hg86/parallely-logs-hugo-2021-11-14/last3lines.stdout
 c
 d
 e
 (no newline at end of output)
 
-1 command finished in 0.0766208 seconds
+1 command finished in 0.0677128 seconds
 + echo
 
 $ parallely --cc cat -a last3lines 'printf "a\nb\nc\nd\ne"'
 parallely will run 1 commands in parallel 
+STATUS IS 0
 ============= Successful command(s) =============
-Command last3lines succeeded in 0.00837231 seconds.
+Command last3lines succeeded in 0.011822 seconds.
 + printf "a\nb\nc\nd\ne"
-/tmp/tmp.CSCU9bjNOQ/parallely-logs-hugo-2021-11-14/last3lines.stderr
-/tmp/tmp.CSCU9bjNOQ/parallely-logs-hugo-2021-11-14/last3lines.stdout
+/tmp/tmp.MGTwQFO3qI/parallely-logs-hugo-2021-11-14/last3lines.stderr
+/tmp/tmp.MGTwQFO3qI/parallely-logs-hugo-2021-11-14/last3lines.stdout
 STDERR output for successful command last3lines: (no output)
 STDOUT output for successful command last3lines: 4 lines
-+ cat  /tmp/tmp.CSCU9bjNOQ/parallely-logs-hugo-2021-11-14/last3lines.stdout
++ cat  /tmp/tmp.MGTwQFO3qI/parallely-logs-hugo-2021-11-14/last3lines.stdout
 a
 b
 c
@@ -550,7 +595,7 @@ d
 e
 (no newline at end of output)
 
-1 command finished in 0.0633631 seconds
+1 command finished in 0.173283 seconds
 
 ```
 
@@ -565,35 +610,39 @@ $ parallely --no-color --no-emoji -a long-running 'echo OK >&2 && sleep 0.25' \
     lots-of-output 'cat $(which parallely)' \
     failing 'echo ERROR ; exit 1'
 parallely will run 3 commands in parallel 
+STATUS IS 1
+STATUS IS 0
+STATUS IS 0
 ============= Successful command(s) =============
-Command long-running succeeded in 0.261268 seconds.
+Command long-running succeeded in 0.259919 seconds.
 + echo OK >&2 && sleep 0.25
-/tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/long-running.stderr
-/tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/long-running.stdout
+/tmp/tmp.S8UWNstruz/parallely-logs-hugo-2021-11-14/long-running.stderr
+/tmp/tmp.S8UWNstruz/parallely-logs-hugo-2021-11-14/long-running.stdout
 STDERR output for successful command long-running: 1 lines
-+ tail -n1 /tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/long-running.stderr
++ tail -n1 /tmp/tmp.S8UWNstruz/parallely-logs-hugo-2021-11-14/long-running.stderr
 OK
 STDOUT output for successful command long-running: (no output)
 
-Command lots-of-output succeeded in 0.0248678 seconds.
+Command lots-of-output succeeded in 0.0136321 seconds.
 + cat $(which parallely)
-/tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
-/tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+/tmp/tmp.S8UWNstruz/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
+/tmp/tmp.S8UWNstruz/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
 STDERR output for successful command lots-of-output: (no output)
-STDOUT output for successful command lots-of-output: 912 lines
-+ tail -n1 /tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+STDOUT output for successful command lots-of-output: 913 lines
++ tail -n1 /tmp/tmp.S8UWNstruz/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
 # End of parallely script
 
-Command failing succeeded in 0.0137508 seconds.
+============= Failed command output =============
+ERROR Failure in command failing after 0.0110793 seconds
 + echo ERROR ; exit 1
-/tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/failing.stderr
-/tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/failing.stdout
-STDERR output for successful command failing: (no output)
-STDOUT output for successful command failing: 1 lines
-+ tail -n1 /tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/failing.stdout
+/tmp/tmp.S8UWNstruz/parallely-logs-hugo-2021-11-14/failing.stderr
+/tmp/tmp.S8UWNstruz/parallely-logs-hugo-2021-11-14/failing.stdout
+STDERR output for failed command failing: (no output)
+STDOUT output for failed command failing: 1 lines
++ tail -n1 /tmp/tmp.S8UWNstruz/parallely-logs-hugo-2021-11-14/failing.stdout
 ERROR
-
-3 commands finished in 0.380262 seconds
+3 commands finished in 0.384138 seconds
+ERROR 1/3 command failed: failing 
 
 ```
 
@@ -610,37 +659,40 @@ $ parallely --sequential -a long-running 'echo OK >&2 && sleep 0.25' \
     failing 'echo ERROR ; exit 1'
 parallely will run 3 commands sequentially 
 FORCE_SEQUENTIAL is set: Waiting for command long-running to finish
+STATUS IS 0
 FORCE_SEQUENTIAL is set: Waiting for command lots-of-output to finish
+STATUS IS 0
 FORCE_SEQUENTIAL is set: Waiting for command failing to finish
+STATUS IS 1
 ============= Successful command(s) =============
-Command long-running succeeded in 0.260458 seconds.
+Command long-running succeeded in 0.261164 seconds.
 + echo OK >&2 && sleep 0.25
-/tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/long-running.stderr
-/tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/long-running.stdout
+/tmp/tmp.f9f1TdykrO/parallely-logs-hugo-2021-11-14/long-running.stderr
+/tmp/tmp.f9f1TdykrO/parallely-logs-hugo-2021-11-14/long-running.stdout
 STDERR output for successful command long-running: 1 lines
-+ tail -n1 /tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/long-running.stderr
++ tail -n1 /tmp/tmp.f9f1TdykrO/parallely-logs-hugo-2021-11-14/long-running.stderr
 OK
 STDOUT output for successful command long-running: (no output)
 
-Command lots-of-output succeeded in 0.0124722 seconds.
+Command lots-of-output succeeded in 0.0135069 seconds.
 + cat $(which parallely)
-/tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
-/tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+/tmp/tmp.f9f1TdykrO/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
+/tmp/tmp.f9f1TdykrO/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
 STDERR output for successful command lots-of-output: (no output)
-STDOUT output for successful command lots-of-output: 912 lines
-+ tail -n1 /tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+STDOUT output for successful command lots-of-output: 913 lines
++ tail -n1 /tmp/tmp.f9f1TdykrO/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
 # End of parallely script
 
-Command failing succeeded in 0.012435 seconds.
+Command failing succeeded in 0.00769448 seconds.
 + echo ERROR ; exit 1
-/tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/failing.stderr
-/tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/failing.stdout
+/tmp/tmp.f9f1TdykrO/parallely-logs-hugo-2021-11-14/failing.stderr
+/tmp/tmp.f9f1TdykrO/parallely-logs-hugo-2021-11-14/failing.stdout
 STDERR output for successful command failing: (no output)
 STDOUT output for successful command failing: 1 lines
-+ tail -n1 /tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/failing.stdout
++ tail -n1 /tmp/tmp.f9f1TdykrO/parallely-logs-hugo-2021-11-14/failing.stdout
 ERROR
 
-3 commands finished in 0.442281 seconds
+3 commands finished in 0.425961 seconds
 
 ```
 
@@ -668,7 +720,7 @@ NOTIFY_COMMAND_ARGS=
 FAILURE_NOTIFY_COMMAND_ARGS=--urgency=critical
 ENABLE_COLORS=false
 LIGHT_MODE=false
-Temporary directory CMD_OUT_DIR=/tmp/tmp.25buE0RAR2/parallely-logs-hugo-2021-11-14
+Temporary directory CMD_OUT_DIR=/tmp/tmp.3rpsSExMQp/parallely-logs-hugo-2021-11-14
 
 $ parallely --no-emoji --light-mode --shell-command zsh --cc-args -n10 --show-configuration
 ============= Configuration =============
@@ -688,13 +740,13 @@ NOTIFY_COMMAND_ARGS=
 FAILURE_NOTIFY_COMMAND_ARGS=--urgency=critical
 ENABLE_COLORS=false
 LIGHT_MODE=true
-Temporary directory CMD_OUT_DIR=/tmp/tmp.msPHm7Ij6h/parallely-logs-hugo-2021-11-14
+Temporary directory CMD_OUT_DIR=/tmp/tmp.tCXMg5SCTZ/parallely-logs-hugo-2021-11-14
 
 $ parallely --version
 1.8.1
 $ parallely --debug
 DEBUG: arglog: Remaining (0)
-DEBUG: PPID=1102950
+DEBUG: PPID=1134708
 DEBUG: Parent process name: bash
 DEBUG: Is a TTY: false
 DEBUG: Colors supported: 256

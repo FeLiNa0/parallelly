@@ -1,4 +1,5 @@
 #!/bin/sh
+set -eu
 echo Parallely supports \`--sequential or -s\` to run commands sequentially instead of in parallel.
 echo This is useful for testing and comparison purposes.
 echo Also, you can use this mode to just capture output and notify on completion.

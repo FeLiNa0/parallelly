@@ -21,6 +21,7 @@ HELP_STRING_CMD = "parallely -h"
 
 DEMO_MARKER = "<DEMO_OUTPUT>"
 DEMO_DIRECTORY = "tests/demos/"
+ACCEPTABLE_DEMO_EXIT_CODES = [0, 22]
 
 PARALLELY_CMD_MARKER = "+ parallely"
 PARALLELY_CMD_MARKER_REPLACEMENT = "$ parallely"
@@ -63,8 +64,12 @@ def get_demo_output() -> str:
         outputs.append(f"\n### Demo {1 + i}: {demo_name}\n\n")
         output_str = completed_process.stdout.decode("utf-8")
 
-        if completed_process.returncode not in [0, 22]:
-            warn("Process status code is not 0 or 22! Output:", f"\n{output_str}")
+        returncode = completed_process.returncode
+        if returncode not in ACCEPTABLE_DEMO_EXIT_CODES:
+            warn(
+                f"Process status code {returncode} is not {' '.join(map(str, ACCEPTABLE_DEMO_EXIT_CODES))}! Output:",
+                repr(output_str),
+            )
 
         # Convert to lines
         output: List[str] = output_str.split("\n")

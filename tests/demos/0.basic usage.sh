@@ -1,4 +1,5 @@
 #!/bin/sh
+set -eu
 echo Parallely runs multiple commands in parallel and captures their output.
 echo You pass it pairs of arguments: a name for the command and the command itself.
 echo

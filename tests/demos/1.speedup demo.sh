@@ -1,4 +1,5 @@
 #!/bin/sh
+set -eu
 echo "Here, we're going to run ten sleep 0.1 commands in parallel and then sequentially to compare the runtime."
 echo
 echo BEGIN_CODE

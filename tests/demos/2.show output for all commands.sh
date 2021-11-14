@@ -1,4 +1,5 @@
 #!/bin/sh
+set -eu
 echo Use \`-a\` to show output for successful commands as well.
 echo
 echo BEGIN_CODE

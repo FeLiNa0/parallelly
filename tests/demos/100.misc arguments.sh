@@ -1,4 +1,5 @@
 #!/bin/sh
+set -eu
 echo You can show the configuration, the version, or debug information easily.
 echo
 echo BEGIN_CODE

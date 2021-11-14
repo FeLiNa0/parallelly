@@ -130,6 +130,7 @@ PARALLELY_TMP_DIR="${PARALLELY_TMP_DIR-$(mktemp --directory)}"
 
 SHOW_LINE_COUNT="${SHOW_LINE_COUNT-true}"
 SHOW_BYTE_COUNT="${SHOW_BYTE_COUNT-true}"
+HUMAN_READABLE_BYTE_COUNT="${HUMAN_READABLE_BYTE_COUNT-true}"
 
 # If $DISPLAY is not set
 # use CLI to notify about commands finishing
@@ -272,6 +273,38 @@ noun() {
   fi
 }
 
+bytes_to_human_readable() {
+    local integer=${1:-0} decimal="" iterations=1
+    local byte_names="byte KiB MiB GiB TiB PiB EiB YiB ZiB"
+    local byte_names_count="$(echo "$byte_names" | wc -w)"
+    while [ "$integer" -gt 1023 ] && [ "$iterations" -lt "$byte_names_count" ]; do
+        printf -v decimal ".%02d" $((integer % 1024 * 100 / 1024))
+        integer=$((integer / 1024))
+        iterations=$((iterations + 1))
+    done
+    if [ "$decimal" = ".00" ]; then
+      decimal=""
+    fi
+    float="$integer$decimal"
+    if command -v cut > /dev/null; then
+      byte_name="$(echo "$byte_names" | cut -d' ' -f"$iterations")"
+      byte_name=" $(noun "$float" "$byte_name")"
+    else
+      byte_name=""
+    fi
+    echo "$float$byte_name"
+}
+
+# TODO add unit tests
+# bytes_to_human_readable 1
+# bytes_to_human_readable 1024
+# bytes_to_human_readable 1000
+# bytes_to_human_readable 10240
+# bytes_to_human_readable $((1024 * 1024 + 1024 * 1024 / 10))
+# bytes_to_human_readable 1025
+# bytes_to_human_readable 1121551421
+# bytes_to_human_readable 11215514210000000
+
 ############## Help
 help() {
   # I tried changing this to one large multi-line string, but it messes with
@@ -360,6 +393,8 @@ help() {
   echo "    --byte-count|--no-byte-count or set \$SHOW_BYTE_COUNT:"
   echo "        Whether to show byte count."
   echo "        Default: true"
+  echo "    --human-readable-byte-count|-H|--raw-byte-count or set \$HUMAN_READABLE_BYTE_COUNT:"
+  echo "        Whether to show byte count in binary prefixes, such as 10MiB."
   echo "  Running commands configuration:"
   echo "    --sequential|-s|--no-sequential or set \$FORCE_SEQUENTIAL=true:"
   echo "        Run commands sequentially instead of in parallel."
@@ -451,6 +486,7 @@ help() {
   echo "      ok-and-output 'echo test ; echo stderr test >&2' \\"
   echo "      fail-slower-delay '! sleep 0.4' \\"
   echo "      fail-no-output 'exit 210' \\"
+  echo "      lots-of-output 'cat \$(which parallely)' \\"
   echo "      'long name for command with spaces' 'true && echo ok'"
   echo
   echo "    The odd numbered arguments are short, filesafe names for each command." 
@@ -607,6 +643,8 @@ parse_option() {
     --no-line-count) SHOW_LINE_COUNT=false ;;
     --byte-count) SHOW_BYTE_COUNT=true ;;
     --no-byte-count) SHOW_BYTE_COUNT=false ;;
+    --human-readable-byte-count|-H) SHOW_BYTE_COUNT=true ; HUMAN_READABLE_BYTE_COUNT=true ;;
+    --raw-byte-count) SHOW_BYTE_COUNT=true ; HUMAN_READABLE_BYTE_COUNT=false ;;
     --sequential | -s) FORCE_SEQUENTIAL=true ;;
     --no-sequential) FORCE_SEQUENTIAL=false ;;
     --shell-command) validate_option_argument "$ARGUMENT" ; CMD_SHELL="$ARGUMENT" ;;
@@ -820,6 +858,7 @@ show_configuration() {
   log "PARALLELY_TMP_DIR=$PARALLELY_TMP_DIR"
   log "SHOW_LINE_COUNT=$SHOW_LINE_COUNT"
   log "SHOW_BYTE_COUNT=$SHOW_BYTE_COUNT"
+  log "HUMAN_READABLE_BYTE_COUNT=$HUMAN_READABLE_BYTE_COUNT"
   log "NOTIFY_COMMAND=$NOTIFY_COMMAND"
   log "FAILURE_NOTIFY_COMMAND=$FAILURE_NOTIFY_COMMAND"
   log "NOTIFY_COMMAND_ARGS=$NOTIFY_COMMAND_ARGS"
@@ -898,7 +937,12 @@ byte_count() {
     echo "UNKNOWN byte count"
   else
     __BYTE_COUNT="$(cat "$1" 2>/dev/null | wc -c || echo 0)"
-    echo "$__BYTE_COUNT $(noun "$__BYTE_COUNT" byte)"
+    if [ "$HUMAN_READABLE_BYTE_COUNT" = true ]; then
+      echo "$(bytes_to_human_readable "$__BYTE_COUNT")"
+    else
+      __BYTE_NAME=$(noun "$__BYTE_COUNT" byte)
+      echo "$__BYTE_COUNT $__BYTE_NAME"
+    fi
   fi
 }
 

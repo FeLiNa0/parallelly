@@ -847,7 +847,19 @@ verbose
 
 ############## Wait for commands and show results, especially from failed commands
 line_count() {
-  cat "$1" 2>/dev/null | wc -l || echo 0
+  if ! [ -f "$1" ] && command -v wc > /dev/null; then
+    echo "UNKNOWN"
+  else
+    cat "$1" 2>/dev/null | wc -l || echo 0
+  fi
+}
+
+byte_count() {
+  if ! [ -f "$1" ] && command -v wc > /dev/null; then
+    echo "UNKNOWN"
+  else
+    cat "$1" 2>/dev/null | wc -c || echo 0
+  fi
 }
 
 show_output() {
@@ -857,11 +869,12 @@ show_output() {
   NAME="$3"
   FILE="$4"
   LINE_COUNT="$(line_count "$FILE")"
+  BYTE_COUNT="$(byte_count "$FILE")"
   printf "%s" "$(color "$BLUE")$OUTPUT_NAME$(color "$NONE") output for $DISPOSITION command $NAME:"
   if [ -z "$(cat "$FILE")" ]; then
     log_color "$UNDEREMPH" " $NO_OUTPUT_INDICATOR"
   else
-    log " $LINE_COUNT lines"
+    log " $BYTE_COUNT bytes $LINE_COUNT lines"
     log + "$SHOW_CMD_OUTPUT_CMD $SHOW_CMD_OUTPUT_CMD_ARGS $FILE"
     $SHOW_CMD_OUTPUT_CMD $SHOW_CMD_OUTPUT_CMD_ARGS "$FILE"
     if [ "$(tail -c1 "$FILE")" != "$NEWLINE" ]; then

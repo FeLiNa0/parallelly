@@ -30,7 +30,7 @@ MISSING_OPTARG_EXIT_CODE=85
 UNKNOWN_LONG_OPTION_EXIT_CODE=81
 UNKNOWN_SHORT_OPTION_EXIT_CODE=82
 COMPOUND_SHORT_OPTION_EXIT_CODE=83
-NEWLINE_IN_NAME_EXIT_CODE=99
+CONFIGURABLE_COMMAND_NOT_EXECUTABLE_EXIT_CODE=90
 COMMANDS_FAILED_EXIT_CODE=2
 
 ############## Constants, but they might become configurable
@@ -552,6 +552,24 @@ while [ "$#" -gt 0 ]; do
   COMMAND_FILE="$CMD_OUT_DIR/$CURRENT_NAME.command"
   echo "$CURRENT_COMMAND" > "$COMMAND_FILE"
 done
+
+############## Validate arguments
+
+check_is_exec() {
+  CMD_NAME="$1"
+  CMD="$(echo "$2" | cut -f1 -d' ')"
+  if ! command -v "$CMD" > /dev/null || [ -x "$CMD_NAME" ]; then
+    error "Please change $CMD_NAME, \"$CMD\" is not executable."
+    exit "$CONFIGURABLE_COMMAND_NOT_EXECUTABLE_EXIT_CODE"
+  fi
+}
+
+check_is_exec SHOW_CMD_OUTPUT_CMD "$SHOW_CMD_OUTPUT_CMD"
+check_is_exec CMD_SHELL "$CMD_SHELL"
+check_is_exec NOTIFY_COMMAND "$NOTIFY_COMMAND"
+check_is_exec FAILURE_NOTIFY_COMMAND "$FAILURE_NOTIFY_COMMAND"
+
+############## Set variables that depend on arguments
 
 NEWLINE_AFTER_EVERY_ERROR=false
 if [ "$PARALLELY_VERBOSE_OUTPUT" = true ]; then

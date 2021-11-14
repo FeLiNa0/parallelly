@@ -26,6 +26,7 @@ ACCEPTABLE_DEMO_EXIT_CODES = [0, 22]
 PARALLELY_SECONDS_MARKER = " seconds."
 PARALLELY_CMD_MARKER = "+ parallely"
 PARALLELY_CMD_MARKER_REPLACEMENT = "$ parallely"
+PARALLELY_PPID_MARKER = "PPID="
 
 CWD = os.path.abspath(os.curdir)
 
@@ -50,6 +51,16 @@ def round_seconds(output: List[str]) -> None:
         if line.endswith(PARALLELY_SECONDS_MARKER):
             output[i] = re.sub(
                 f"(\\d+.\\d)\\d+({PARALLELY_SECONDS_MARKER})", "\\1\\2", line
+            )
+
+
+def elide_ppid(output: List[str]) -> None:
+    for i, line in enumerate(output):
+        if PARALLELY_PPID_MARKER in line:
+            output[i] = re.sub(
+                f"{PARALLELY_PPID_MARKER}.*",
+                f"{PARALLELY_PPID_MARKER}<omitted>",
+                line,
             )
 
 
@@ -85,6 +96,7 @@ def get_demo_output() -> str:
 
         wrap_command(output)
         round_seconds(output)
+        elide_ppid(output)
 
         found_code = False
         for i, line in enumerate(output):

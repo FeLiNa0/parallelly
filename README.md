@@ -716,7 +716,7 @@ $ parallely --version
 1.8.1
 $ parallely --debug
 DEBUG: arglog: Remaining (0)
-DEBUG: PPID=1190163
+DEBUG: PPID=<omitted>
 DEBUG: Parent process name: bash
 DEBUG: Is a TTY: false
 DEBUG: Colors supported: 256

@@ -19,6 +19,8 @@ fi
 ############## Constants
 SCRIPT_NAME="parallely"
 VERSION=1.6.0
+# For some reason, plain "\n" doesn't work with test
+NEWLINE="$(printf "\n")"
 
 ############## Exit codes
 NO_ARGUMENTS_EXIT_CODE=89
@@ -28,6 +30,7 @@ MISSING_OPTARG_EXIT_CODE=85
 UNKNOWN_LONG_OPTION_EXIT_CODE=81
 UNKNOWN_SHORT_OPTION_EXIT_CODE=82
 COMPOUND_SHORT_OPTION_EXIT_CODE=83
+NEWLINE_IN_NAME_EXIT_CODE=99
 COMMANDS_FAILED_EXIT_CODE=2
 
 ############## Constants, but they might become configurable
@@ -296,8 +299,10 @@ help() {
   echo "      fail-printf-nonewline 'printf \"%s %s\"\\ abc 123 ; false' \\"
   echo "      fail-rsync-src 'rsync -rhP nonexistentdir backup' \\"
   echo "      delay 'sleep 0.2' \\"
+  echo "      ok-and-output 'echo test ; echo stderr test >&2' \\"
   echo "      fail-slower-delay '! sleep 0.4' \\"
-  echo "      fail-no-output 'exit 210'"
+  echo "      fail-no-output 'exit 210' \\"
+  echo "      'long name for command with spaces' 'true && echo ok'"
   echo
   echo "    The odd numbered arguments are short, filesafe names for each command." 
   echo "    The names are used in notifications and files storing outout."
@@ -453,6 +458,8 @@ parse_option() {
     # Indicate option is a name or command
     *) 
       if [ "$EXPECTING_ARG" = name ]; then
+        # Rare case: name contains newline.
+        # I had trouble detecting this condition..
         CURRENT_NAME="$OPTION"
       elif [ "$EXPECTING_ARG" = command ]; then
         CURRENT_COMMAND="$OPTION"
@@ -586,11 +593,11 @@ fi
 # Run each one as a command in parallel, saving its output to a tmp file.
 START_TIME="$(time_in_sec)"
 verbose_section Starting commands
-for NAME in $(cat $NAMES_FILE); do
+while read NAME; do
   COMMAND_FILE="$CMD_OUT_DIR/$NAME.command"
   CURRENT_CMD="$(( CURRENT_CMD + 1))"
   run_cmd "$NAME" "$(cat "$COMMAND_FILE")"
-done
+done < "$NAMES_FILE"
 
 verbose
 
@@ -608,7 +615,7 @@ show_output() {
     log
     log + "$SHOW_CMD_OUTPUT_CMD" "$FILE"
     $SHOW_CMD_OUTPUT_CMD "$FILE"
-    if [ "$(tail -c1 "$FILE")" != "$(printf "\n")" ]; then
+    if [ "$(tail -c1 "$FILE")" != "$NEWLINE" ]; then
       log
       log_color "$GREY" "$NO_EOF_NEWLINE_INDICATOR"
     fi

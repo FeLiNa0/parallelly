@@ -1,0 +1,10 @@
+#!/bin/sh
+# Fails
+test1() {
+  echo OK
+}
+test3() {
+  echo IT FAILS SUCCESFULYLY:"warjkasjdajdajgkjgdakjgafa"
+  return 1
+}
+parallely a test1 b test2 c test3 --shell-command RAW "$@" -V

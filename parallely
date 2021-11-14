@@ -285,8 +285,9 @@ help() {
   echo "  Debug only:"
   echo "    --show-configuration or set \$SHOW_CONFIGURATION=true:"
   echo "        Print configuration."
-  echo "    set \$DEBUG=true"
-  echo "    set \$TRACE=true to run 'set -x'"
+  echo "    --debug or set \$DEBUG=true"
+  echo "    --trace or set \$TRACE=true:"
+  echo "        Run 'set -x'"
   echo
   echo "Examples:"
   echo
@@ -428,6 +429,8 @@ parse_option() {
     --notify-command) validate_option_argument "$ARGUMENT" ; NOTIFY_COMMAND="$ARGUMENT" ;;
     --failure-notify-command) validate_option_argument "$ARGUMENT" ; FAILURE_NOTIFY_COMMAND="$ARGUMENT" ;;
     --show-configuration) SHOW_CONFIGURATION=true ;;
+    --debug) DEBUG=true ;;
+    --trace) set -x ;;
     --*=*)
       error "Long options with argument set with = are not allowed: given $OPTION"
       log "Use --option argument instead of --option=argument"

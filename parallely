@@ -316,6 +316,7 @@ help() {
   echo "    --light-mode|--no-light-mode or set \$LIGHT_MODE=true: "
   echo "    --command-output-command|--cc or set \$SHOW_CMD_OUTPUT_CMD:"
   echo "        Command for printing stderr and stdout of a command"
+  echo "        If this argument is passed, --cc-args is set to '' by default."
   echo "        Default: $SHOW_CMD_OUTPUT_CMD_DEFAULT"
   echo "    --command-output-command-args|--cc-args  or set \$SHOW_CMD_OUTPUT_CMD_ARG:"
   echo "        Arguments for command for printing stderr and stdout of a command"
@@ -541,7 +542,7 @@ parse_option() {
     --no-color | -n) ENABLE_COLORS=false ;;
     --light-mode) LIGHT_MODE=true ;;
     --no-light-mode) LIGHT_MODE=false ;;
-    --command-output-command | --cc) validate_option_argument "$ARGUMENT" ; SHOW_CMD_OUTPUT_CMD="$ARGUMENT" ;;
+    --command-output-command | --cc) validate_option_argument "$ARGUMENT" ; SHOW_CMD_OUTPUT_CMD_ARGS='' ; SHOW_CMD_OUTPUT_CMD="$ARGUMENT" ;;
     --command-output-command-args | --cc-args) PARSED_ARGUMENT=true ; SHOW_CMD_OUTPUT_CMD_ARGS="$ARGUMENT" ;;
     --sequential | -s) FORCE_SEQUENTIAL=true ;;
     --no-sequential) FORCE_SEQUENTIAL=false ;;

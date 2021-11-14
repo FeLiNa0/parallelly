@@ -44,7 +44,8 @@ COMMANDS_FAILED_EXIT_CODE=2
 ############## Constants, but they might become configurable
 DEFAULT_CMD_SHELL="sh"
 DEFAULT_CMD_SHELL_ARGS="-c"
-SHOW_CMD_OUTPUT_CMD_DEFAULT="tail -n1"
+SHOW_CMD_OUTPUT_CMD_DEFAULT="tail"
+SHOW_CMD_OUTPUT_CMD_ARGS_DEFAULT="-n1"
 NO_OUTPUT_INDICATOR="(no output)"
 NO_EOF_NEWLINE_INDICATOR="(no newline at end of output)"
 
@@ -79,9 +80,8 @@ ENABLE_COLORS="${ENABLE_COLORS-true}"
 CMD_SHELL="${CMD_SHELL-$DEFAULT_CMD_SHELL}"
 CMD_SHELL_ARGS="${CMD_SHELL_ARGS-${DEFAULT_CMD_SHELL_ARGS}}"
 
-if [ -z "${SHOW_CMD_OUTPUT_CMD-}" ]; then
-  SHOW_CMD_OUTPUT_CMD="$SHOW_CMD_OUTPUT_CMD_DEFAULT"
-fi
+SHOW_CMD_OUTPUT_CMD_ARGS="${SHOW_CMD_OUTPUT_CMD_ARGS-$SHOW_CMD_OUTPUT_CMD_ARGS_DEFAULT}"
+SHOW_CMD_OUTPUT_CMD="${SHOW_CMD_OUTPUT_CMD-$SHOW_CMD_OUTPUT_CMD_DEFAULT}"
 
 # If $DISPLAY is not set
 # use CLI to notify about commands finishing
@@ -270,13 +270,12 @@ help() {
        "        If enabled, errors are "
   log_color "$RED" "colored."
   echo "        Default: true if output is a tty, false otherwise."
-  echo "    --command-output-command or set \$SHOW_CMD_OUTPUT_CMD:"
-  echo "        Command for printing stderr and stdout of a command/"
+  echo "    --command-output-command|--cc or set \$SHOW_CMD_OUTPUT_CMD:"
+  echo "        Command for printing stderr and stdout of a command"
   echo "        Default: $SHOW_CMD_OUTPUT_CMD_DEFAULT"
-  echo "        Example values:"
-  echo "          Show all output: cat"
-  echo "          Show last ten lines: tail -n10"
-  echo "          Show output for each command one at a time: less"
+  echo "    --command-output-command-args|--cc-args  or set \$SHOW_CMD_OUTPUT_CMD_ARG:"
+  echo "        Arguments for command for printing stderr and stdout of a command"
+  echo "        Default: $SHOW_CMD_OUTPUT_CMD_ARGS_DEFAULT"
   echo "  Running commands configuration:"
   echo "    --sequential|-s|--no-sequential or set \$FORCE_SEQUENTIAL=true:"
   echo "        Run commands sequentially instead of in parallel."
@@ -287,9 +286,9 @@ help() {
   echo "        Special value: RAW."
   echo "          Run the commands directly, without using a shell."
   echo "          Use only if you know what you're doing."
-  echo "        Default: $DEFAULT_CMD_SHELL
+  echo "        Default: $DEFAULT_CMD_SHELL"
   echo "    --shell-command-args or set \$CMD_SHELL_ARGS:"
-  echo "        Arguments to pass to the shell
+  echo "        Arguments to pass to the shell"
   echo "        Default: $DEFAULT_CMD_SHELL_ARGS"
   echo "  Notifications configuration:"
   echo "    --notify-command or set \$NOTIFY_COMMAND:"
@@ -425,7 +424,7 @@ run_cmd() {
 ############## Parse arguments
 
 validate_option_argument() {
-  debug "arglog: Validating optarg: \"$ARGUMENT\""
+  debug "arglog: Validating executable optarg: \"$ARGUMENT\""
   if [ -z "$ARGUMENT" ]; then
     error Option "$OPTION" expected argument
     exit "$MISSING_OPTARG_EXIT_CODE"
@@ -459,15 +458,16 @@ parse_option() {
     --no-emoji | -z) PARALLELY_EMOJI_OUTPUT=false ;;
     --color | -c) ENABLE_COLORS=true ;;
     --no-color | -n) ENABLE_COLORS=false ;;
-    --command-output-command) validate_option_argument "$ARGUMENT" ; SHOW_CMD_OUTPUT_CMD="$ARGUMENT" ;;
+    --command-output-command | --cc) validate_option_argument "$ARGUMENT" ; SHOW_CMD_OUTPUT_CMD="$ARGUMENT" ;;
+    --command-output-command-args | --cc-args) PARSED_ARGUMENT=true ; SHOW_CMD_OUTPUT_CMD_ARGS="$ARGUMENT" ;;
     --sequential | -s) FORCE_SEQUENTIAL=true ;;
     --no-sequential) FORCE_SEQUENTIAL=false ;;
     --shell-command) validate_option_argument "$ARGUMENT" ; CMD_SHELL="$ARGUMENT" ;;
-    --shell-command-args) validate_option_argument "$ARGUMENT" ; CMD_SHELL_ARGS="$ARGUMENT" ;;
+    --shell-command-args) PARSED_ARGUMENT=true ; CMD_SHELL_ARGS="$ARGUMENT" ;;
     --notify-command) validate_option_argument "$ARGUMENT" ; NOTIFY_COMMAND="$ARGUMENT" ;;
     --failure-notify-command) validate_option_argument "$ARGUMENT" ; FAILURE_NOTIFY_COMMAND="$ARGUMENT" ;;
-    --notify-command-args) validate_option_argument "$ARGUMENT" ; NOTIFY_COMMAND_ARGS="$ARGUMENT" ;;
-    --failure-notify-command-args) validate_option_argument "$ARGUMENT" ; FAILURE_NOTIFY_COMMAND_ARGS="$ARGUMENT" ;;
+    --notify-command-args) PARSED_ARGUMENT=true ; NOTIFY_COMMAND_ARGS="$ARGUMENT" ;;
+    --failure-notify-command-args) PARSED_ARGUMENT=true ; FAILURE_NOTIFY_COMMAND_ARGS="$ARGUMENT" ;;
     --show-configuration) SHOW_CONFIGURATION=true ;;
     --debug) DEBUG=true ;;
     --trace) TRACE=true ;;
@@ -637,6 +637,7 @@ show_configuration() {
   log "CMD_SHELL_ARGS=$CMD_SHELL_ARGS"
   log "FORCE_SEQUENTIAL=$FORCE_SEQUENTIAL"
   log "SHOW_CMD_OUTPUT_CMD=$SHOW_CMD_OUTPUT_CMD"
+  log "SHOW_CMD_OUTPUT_CMD_ARGS=$SHOW_CMD_OUTPUT_CMD_ARGS"
   log "NOTIFY_COMMAND=$NOTIFY_COMMAND"
   log "FAILURE_NOTIFY_COMMAND=$FAILURE_NOTIFY_COMMAND"
   log "NOTIFY_COMMAND_ARGS=$NOTIFY_COMMAND_ARGS"
@@ -684,8 +685,8 @@ show_output() {
     log_color "$GREY" " $NO_OUTPUT_INDICATOR"
   else
     log
-    log + "$SHOW_CMD_OUTPUT_CMD" "$FILE"
-    $SHOW_CMD_OUTPUT_CMD "$FILE"
+    log + "$SHOW_CMD_OUTPUT_CMD $SHOW_CMD_OUTPUT_CMD_ARGS $FILE"
+    $SHOW_CMD_OUTPUT_CMD $SHOW_CMD_OUTPUT_CMD_ARGS "$FILE"
     if [ "$(tail -c1 "$FILE")" != "$NEWLINE" ]; then
       log
       log_color "$GREY" "$NO_EOF_NEWLINE_INDICATOR"

@@ -238,6 +238,7 @@ help() {
   echo
   echo "Configuration:"
   echo "  Options take priority over environment variables."
+  echo "  Options can go in between a name and its command."
   echo "  Use --show-configuration or --verbose to see configuration."
   echo
   echo "  Output configuration:"
@@ -311,6 +312,9 @@ help() {
   echo "    $SCRIPT_NAME list-files ls"
   echo
   echo "  Verbose output and a command without arguments:"
+  echo "    $SCRIPT_NAME -V list-files ls"
+  echo "    $SCRIPT_NAME list-files ls -V"
+  echo "    $SCRIPT_NAME list-files -V ls"
   echo "    VERBOSE=true $SCRIPT_NAME list-files ls"
   echo "    PARALLELY_VERBOSE_OUTPUT=true $SCRIPT_NAME list-files ls"
   echo

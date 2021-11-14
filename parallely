@@ -281,6 +281,9 @@ help() {
   echo "        Default: false"
   echo "    --shell-command or set \$CMD_SHELL:"
   echo "        Which shell to run the commands in."
+  echo "        Special value: RAW."
+  echo "          Run the commands directly, without using a shell."
+  echo "          Use only if you know what you're doing."
   echo "        Default: $DEFAULT_CMD_SHELL $DEFAULT_CMD_SHELL_ARGS"
   echo "  Notifications configuration:"
   echo "    --notify-command or set \$NOTIFY_COMMAND:"
@@ -365,32 +368,43 @@ run_cmd() {
   verbose "Starting $NAME command $CURRENT_CMD/$NUM_CMDS"
   verbose + "$CMD_SHELL" "$COMMAND"
 
+  __run_cmd() {
+    set -x
+    NAME="$1"
+    COMMAND="$2"
+    echo "$NAME" "$COMMAND"
+
+    if [ "$CMD_SHELL" = RAW ]; then
+      $COMMAND
+    else
+      $CMD_SHELL "$COMMAND"
+    fi
+  }
+
+  __run_time_notify_capture_cmd() {
+    NAME="$1"
+    COMMAND="$2"
+    STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
+    STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
+    TIME_FILE="$CMD_OUT_DIR/$NAME.time"
+
+    START_TIME="$(time_in_sec)"
+    set +eu
+    ( __run_cmd "$NAME" "$COMMAND" > "$STDOUT_FILE" 2> "$STDERR_FILE" )
+    STATUS_CODE="$?"
+    echo "$(time_in_sec)" "$START_TIME" | awk '{print $1 - $2}' > "$TIME_FILE"
+
+    if [ "$STATUS_CODE" = 0 ]; then
+      $NOTIFY_COMMAND "parallely: $NAME command finished" "$COMMAND" || true
+    else
+      $FAILURE_NOTIFY_COMMAND "parallely: $NAME command failed" "$COMMAND"
+    fi
+    return "$STATUS_CODE"
+  }
+
   # Run command and then run notify command.
   # If either notify command fails, do not count the command as a failed command
-    ( \
-      ( \
-        export START_TIME="$(time_in_sec)" \
-        ; \
-        $CMD_SHELL \
-        "$COMMAND" > "$STDOUT_FILE" 2> "$STDERR_FILE" \
-        ; \
-        export STATUS_CODE="$?" \
-        ; \
-        echo "$(time_in_sec)" "$START_TIME" | awk '{print $1 - $2}' > "$TIME_FILE" \
-        ; \
-        exit "$STATUS_CODE" \
-        ; \
-      ) \
-      && ( \
-        $NOTIFY_COMMAND "parallely: $NAME command finished" "$COMMAND" \
-        || true \
-      ) \
-    ) \
-    || ( \
-      $FAILURE_NOTIFY_COMMAND "parallely: $NAME command failed" "$COMMAND" \
-      && false \
-    ) \
-    &
+  __run_time_notify_capture_cmd "$NAME" "$COMMAND" &
   PID="$!"
   pids="$pids $PID"
   PID_FILE="$CMD_OUT_DIR/$PID"
@@ -565,11 +579,14 @@ while [ "$#" -gt 0 ]; do
   echo "$CURRENT_COMMAND" > "$COMMAND_FILE"
 done
 
-############## Validate arguments
+############## Validate arguments and set variables that depend on arguments
+
 
 if ! [ -f "$NAMES_FILE" ]; then
   error Expected one or more name+command pairs as arguments.
   exit "$NO_NAMECOMMANDPAIRSS_EXIT_CODE"
+else
+  NUM_CMDS="$(cat "$NAMES_FILE" | wc -l)"
 fi
 
 check_is_exec() {
@@ -582,18 +599,16 @@ check_is_exec() {
 }
 
 check_is_exec SHOW_CMD_OUTPUT_CMD "$SHOW_CMD_OUTPUT_CMD"
-check_is_exec CMD_SHELL "$CMD_SHELL"
 check_is_exec NOTIFY_COMMAND "$NOTIFY_COMMAND"
 check_is_exec FAILURE_NOTIFY_COMMAND "$FAILURE_NOTIFY_COMMAND"
-
-############## Set variables that depend on arguments
+if ! [ "$CMD_SHELL" = RAW ]; then
+  check_is_exec CMD_SHELL "$CMD_SHELL"
+fi
 
 NEWLINE_AFTER_EVERY_ERROR=false
 if [ "$PARALLELY_VERBOSE_OUTPUT" = true ]; then
   NEWLINE_AFTER_EVERY_ERROR=true
 fi
-
-NUM_CMDS="$(cat "$NAMES_FILE" | wc -l)"
 
 ############## Print configuration
 
@@ -705,7 +720,7 @@ for PID in $pids; do
     NAME="$(cat "$CMD_OUT_DIR/$PID")"
     STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
     STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
-    TIME="$(cat "$CMD_OUT_DIR/$NAME.time")"
+    TIME="$(cat "$CMD_OUT_DIR/$NAME.time" || echo UNKNOWN)"
     COMMAND="$(cat "$CMD_OUT_DIR/$NAME.command")"
     verbose "$(emoji checkmark)Command $NAME succeeded in $TIME seconds."
     verbose + "$COMMAND"
@@ -734,7 +749,7 @@ for PID in $failedpids; do
 
   STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
   STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
-  TIME="$(cat "$CMD_OUT_DIR/$NAME.time")"
+  TIME="$(cat "$CMD_OUT_DIR/$NAME.time" || echo UNKNOWN)"
   COMMAND="$(cat "$CMD_OUT_DIR/$NAME.command")"
   error "Failure in command $NAME after $TIME seconds"
   log + "$COMMAND"

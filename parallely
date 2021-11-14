@@ -180,7 +180,7 @@ debug() {
 section_str() {
   color 3
   color 1
-  log ============= "$@" =============
+  log '=============' "$@" '============='
   color "$NONE"
 }
 
@@ -726,7 +726,12 @@ if [ "$PARALLELY_VERBOSE_OUTPUT" != true ] && [ "$PARALLELY_SHOW_ALL_OUTPUT" = t
   FORCE_LOG=true
 fi
 
-for PID in $pids; do
+echo \"$pids\"
+for PID in $(echo $pids); do
+  echo PID $PID
+done
+
+for PID in $(echo $pids); do
   if wait "$PID"; then
     SUCCESS="$((SUCCESS + 1))"
     if [ "$SUCCESS" = 1 ]; then
@@ -754,7 +759,7 @@ for PID in $pids; do
 done
 FORCE_LOG=false
 
-for PID in $failedpids; do
+for PID in $(echo $failedpids); do
   FAILURES="$((FAILURES + 1))"
   NAME="$(cat "$CMD_OUT_DIR/$PID")"
   FAILED_CMDS="$NAME $FAILED_CMDS"

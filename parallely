@@ -257,6 +257,8 @@ help() {
   echo "    - Notify if a command succeeds (status code 0) or fails (non-zero status code)."
   echo "    - Save command outputs to a temporary directory."
   echo "    - Print command output if the command fails."
+  echo "    - (Optional) Print command output if the command succeeds."
+  echo "    - Print line count of command output."
   echo "    - Measures total runtime."
   echo "    - Measures runtime of each command."
   echo
@@ -766,17 +768,22 @@ done < "$NAMES_FILE"
 verbose
 
 ############## Wait for commands and show results, especially from failed commands
+line_count() {
+  cat "$1" 2>/dev/null | wc -l || echo 0
+}
+
 show_output() {
   # Print output of a command
   DISPOSITION="$1"
   OUTPUT_NAME="$2"
   NAME="$3"
   FILE="$4"
+  LINE_COUNT="$(line_count "$FILE")"
   printf "%s" "$(color "$BLUE")$OUTPUT_NAME$(color "$NONE") output for $DISPOSITION command $NAME:"
   if [ -z "$(cat "$FILE")" ]; then
     log_color "$UNDEREMPH" " $NO_OUTPUT_INDICATOR"
   else
-    log
+    log " $LINE_COUNT lines"
     log + "$SHOW_CMD_OUTPUT_CMD $SHOW_CMD_OUTPUT_CMD_ARGS $FILE"
     $SHOW_CMD_OUTPUT_CMD $SHOW_CMD_OUTPUT_CMD_ARGS "$FILE"
     if [ "$(tail -c1 "$FILE")" != "$NEWLINE" ]; then

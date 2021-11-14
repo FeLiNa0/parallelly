@@ -623,7 +623,7 @@ fi
 
 check_is_exec() {
   CMD_NAME="$1"
-  CMD="$(echo "$2" | cut -f1 -d' ')"
+  CMD="$2"
   if ! command -v "$CMD" 2>&1 > /dev/null || [ -x "$CMD_NAME" ]; then
     error "Please change $CMD_NAME, \"$CMD\" is not executable."
     exit "$CONFIGURABLE_COMMAND_NOT_EXECUTABLE_EXIT_CODE"

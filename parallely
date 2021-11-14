@@ -257,6 +257,8 @@ help() {
   echo "    - Notify if a command succeeds (status code 0) or fails (non-zero status code)."
   echo "    - Save command outputs to a temporary directory."
   echo "    - Print command output if the command fails."
+  echo "    - Measures total runtime."
+  echo "    - Measures runtime of each command."
   echo
   echo "    See examples in section below."
   echo

@@ -49,13 +49,12 @@ Configuration:
     --color|-c|--no-color|-n or set $ENABLE_COLORS=true: 
         If enabled, errors are colored.
         Default: true if output is a tty, false otherwise.
-    --command-output-command or set $SHOW_CMD_OUTPUT_CMD:
-        Command for printing stderr and stdout of a command/
-        Default: tail -n1
-        Example values:
-          Show all output: cat
-          Show last ten lines: tail -n10
-          Show output for each command one at a time: less
+    --command-output-command|--cc or set $SHOW_CMD_OUTPUT_CMD:
+        Command for printing stderr and stdout of a command
+        Default: tail
+    --command-output-command-args|--cc-args  or set $SHOW_CMD_OUTPUT_CMD_ARG:
+        Arguments for command for printing stderr and stdout of a command
+        Default: -n1
   Running commands configuration:
     --sequential|-s|--no-sequential or set $FORCE_SEQUENTIAL=true:
         Run commands sequentially instead of in parallel.
@@ -66,7 +65,10 @@ Configuration:
         Special value: RAW.
           Run the commands directly, without using a shell.
           Use only if you know what you're doing.
-        Default: sh -c
+        Default: sh
+    --shell-command-args or set $CMD_SHELL_ARGS:
+        Arguments to pass to the shell
+        Default: -c
   Notifications configuration:
     --notify-command or set $NOTIFY_COMMAND:
         Command to notify when a command succeeds.
@@ -78,6 +80,8 @@ Configuration:
         Should take two arguments, each possibly containing spaces.
         First argument is title, second is a description.
         Default: echo if $CLI_NOTIFY is false, more visible GUI command otherwise.
+    --notify-command-args or set $NOTIFY_COMMAND_ARGS
+    --failure-notify-command-args or set $FAILURE_NOTIFY_COMMAND_ARGS
 
   Debug only:
     --show-configuration or set $SHOW_CONFIGURATION=true:
@@ -134,7 +138,7 @@ Examples:
     VERBOSE=true CLI_NOTIFY=true parallely 3 'sleep 2' 2 'sleep 1' 1 'sleep 0.1'
 
 Contributors: Hugo O. Rivera
-Version: 1.7.0
+Version: 1.8.0
 
 ```
 

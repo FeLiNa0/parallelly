@@ -309,7 +309,8 @@ Some of the commands that were run are indicated by a leading `+ `, such as `+ t
 Notice that command output is save in a temporary directory.
 
 ```
-$ parallely long-running 'echo OK >&2 && sleep 0.25' \
+$ parallely \
+    long-running 'echo OK >&2 && sleep 0.25' \
     lots-of-output 'cat $(which parallely)' \
     failing 'echo ERROR ; exit 1'
 parallely will run 3 commands in parallel 
@@ -333,7 +334,8 @@ ERROR 1/3 command failed: failing
 Here, we're going to run ten sleep 0.1 commands in parallel and then sequentially to compare the runtime.
 
 ```
-$ parallely sleep1 'sleep 0.1' \
+$ parallely \
+    sleep1 'sleep 0.1' \
     sleep2 'sleep 0.1' \
     sleep3 'sleep 0.1' \
     sleep4 'sleep 0.1' \
@@ -347,7 +349,8 @@ parallely will run 10 commands in parallel
 10 commands finished in 0.2 seconds.
 + echo
 
-$ parallely --sequential sleep1 'sleep 0.1' \
+$ parallely \
+    --sequential sleep1 'sleep 0.1' \
     sleep2 'sleep 0.1' \
     sleep3 'sleep 0.1' \
     sleep4 'sleep 0.1' \
@@ -378,7 +381,8 @@ FORCE_SEQUENTIAL is set: Waiting for command sleep0 to finish
 Use `-a` to show output for successful commands as well.
 
 ```
-$ parallely -a long-running 'echo OK >&2 && sleep 0.25' \
+$ parallely \
+    -a long-running 'echo OK >&2 && sleep 0.25' \
     lots-of-output 'cat $(which parallely)' \
     failing 'echo ERROR ; exit 1'
 parallely will run 3 commands in parallel 
@@ -427,7 +431,8 @@ You can use `tail -f <OUTPUT FILE>` to see the output of a long-lived command.
 Look for "Starting " and "See output at:" near the top of the logs
 
 ```
-$ parallely -V -a long-running 'echo OK >&2 && sleep 0.25' \
+$ parallely \
+    -V -a long-running 'echo OK >&2 && sleep 0.25' \
     lots-of-output 'cat $(which parallely)' \
     failing 'echo ERROR ; exit 1'
 ============= Configuration =============
@@ -517,7 +522,8 @@ You can use `cat` to show all output or `tail -n10` to show the last 10 lines.
 By default, only the last line of output is shown.
 
 ```
-$ parallely -a onlylastline 'printf "a\nb\nc\nd\ne"'
+$ parallely \
+    -a onlylastline 'printf "a\nb\nc\nd\ne"'
 parallely will run 1 commands in parallel 
 ============= Successful command(s) =============
 Command onlylastline succeeded in 0.0 seconds.
@@ -533,7 +539,8 @@ e
 1 command finished in 0.0 seconds.
 + echo
 
-$ parallely --cc-args -n3 -a last3lines 'printf "a\nb\nc\nd\ne"'
+$ parallely \
+    --cc-args -n3 -a last3lines 'printf "a\nb\nc\nd\ne"'
 parallely will run 1 commands in parallel 
 ============= Successful command(s) =============
 Command last3lines succeeded in 0.0 seconds.
@@ -551,7 +558,8 @@ e
 1 command finished in 0.0 seconds.
 + echo
 
-$ parallely --cc cat -a last3lines 'printf "a\nb\nc\nd\ne"'
+$ parallely \
+    --cc cat -a last3lines 'printf "a\nb\nc\nd\ne"'
 parallely will run 1 commands in parallel 
 ============= Successful command(s) =============
 Command last3lines succeeded in 0.0 seconds.
@@ -579,7 +587,8 @@ Parallely prints emoji and colors when it seems they could be supported.
 To turn them off, use `--no-color` and `--no-emoji`.
 
 ```
-$ parallely --no-color --no-emoji -a long-running 'echo OK >&2 && sleep 0.25' \
+$ parallely \
+    --no-color --no-emoji -a long-running 'echo OK >&2 && sleep 0.25' \
     lots-of-output 'cat $(which parallely)' \
     failing 'echo ERROR ; exit 1'
 parallely will run 3 commands in parallel 
@@ -624,7 +633,8 @@ This is useful for testing and comparison purposes.
 Also, you can use this mode to just capture output and notify on completion.
 
 ```
-$ parallely --sequential -a long-running 'echo OK >&2 && sleep 0.25' \
+$ parallely \
+    --sequential -a long-running 'echo OK >&2 && sleep 0.25' \
     lots-of-output 'cat $(which parallely)' \
     failing 'echo ERROR ; exit 1'
 parallely will run 3 commands sequentially 
@@ -670,7 +680,8 @@ You can show the configuration, the version, or debug information easily.
 
 ```
 $ parallely --trace  # Very noisy!
-$ parallely --show-configuration
+$ parallely \
+    --show-configuration
 ============= Configuration =============
 Environment variables may have been overridden by command line options.
 
@@ -691,7 +702,8 @@ ENABLE_COLORS=false
 LIGHT_MODE=false
 Temporary directory CMD_OUT_DIR=/tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14
 
-$ parallely --no-emoji --light-mode --shell-command zsh --cc-args -n10 --show-configuration
+$ parallely \
+    --no-emoji --light-mode --shell-command zsh --cc-args -n10 --show-configuration
 ============= Configuration =============
 Environment variables may have been overridden by command line options.
 
@@ -712,9 +724,11 @@ ENABLE_COLORS=false
 LIGHT_MODE=true
 Temporary directory CMD_OUT_DIR=/tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14
 
-$ parallely --version
+$ parallely \
+    --version
 1.8.3
-$ parallely --debug
+$ parallely \
+    --debug
 DEBUG: arglog: Remaining (0)
 DEBUG: PPID=<omitted>
 DEBUG: Parent process name: bash

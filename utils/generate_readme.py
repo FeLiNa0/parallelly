@@ -16,17 +16,17 @@ def warn(*args, **kwargs):
     log("WARNING", *args, **kwargs)
 
 
+SCRIPT_NAME = "parallely"
 HELP_MARKER = "<HELP_STRING>"
-HELP_STRING_CMD = "parallely -h"
+HELP_STRING_CMD = f"{SCRIPT_NAME} -h"
 
 DEMO_MARKER = "<DEMO_OUTPUT>"
 DEMO_DIRECTORY = "tests/demos/"
 ACCEPTABLE_DEMO_EXIT_CODES = [0, 22]
 
-PARALLELY_SECONDS_MARKER = " seconds."
-PARALLELY_CMD_MARKER = "+ parallely"
-PARALLELY_CMD_MARKER_REPLACEMENT = "$ parallely"
-PARALLELY_PPID_MARKER = "PPID="
+SECONDS_MARKER = " seconds."
+CMD_MARKER = f"+ {SCRIPT_NAME}"
+PPID_MARKER = "PPID="
 
 CWD = os.path.abspath(os.curdir)
 
@@ -40,26 +40,24 @@ def get_help(path: str) -> str:
 
 def wrap_command(output: List[str]) -> None:
     for i, line in enumerate(output):
-        if line.startswith(PARALLELY_CMD_MARKER):
-            output[i] = re.sub("' ", "' \\\n    ", line).replace(
-                PARALLELY_CMD_MARKER, PARALLELY_CMD_MARKER_REPLACEMENT
-            )
+        if line.startswith(CMD_MARKER):
+            new_line = line.replace(CMD_MARKER, f"$ {SCRIPT_NAME} \\\n   ")
+            new_line = re.sub("' ", "' \\\n    ", new_line)
+            output[i] = new_line
 
 
 def round_seconds(output: List[str]) -> None:
     for i, line in enumerate(output):
-        if line.endswith(PARALLELY_SECONDS_MARKER):
-            output[i] = re.sub(
-                f"(\\d+.\\d)\\d+({PARALLELY_SECONDS_MARKER})", "\\1\\2", line
-            )
+        if line.endswith(SECONDS_MARKER):
+            output[i] = re.sub(f"(\\d+.\\d)\\d+({SECONDS_MARKER})", "\\1\\2", line)
 
 
 def elide_ppid(output: List[str]) -> None:
     for i, line in enumerate(output):
-        if PARALLELY_PPID_MARKER in line:
+        if PPID_MARKER in line:
             output[i] = re.sub(
-                f"{PARALLELY_PPID_MARKER}.*",
-                f"{PARALLELY_PPID_MARKER}<omitted>",
+                f"{PPID_MARKER}.*",
+                f"{PPID_MARKER}<omitted>",
                 line,
             )
 

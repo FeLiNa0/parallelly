@@ -459,11 +459,11 @@ run_cmd() {
     STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
     TIME_FILE="$CMD_OUT_DIR/$NAME.time"
 
-    START_TIME="$(time_in_sec)"
+    LOCAL_START_TIME="$(time_in_sec)"
     set +eu
     ( __run_cmd "$NAME" "$COMMAND" > "$STDOUT_FILE" 2> "$STDERR_FILE" )
     STATUS_CODE="$?"
-    echo "$(time_in_sec)" "$START_TIME" | awk '{print $1 - $2}' > "$TIME_FILE"
+    echo "$(time_in_sec)" "$LOCAL_START_TIME" | awk '{print $1 - $2}' > "$TIME_FILE"
 
     if [ "$STATUS_CODE" = 0 ]; then
       $NOTIFY_COMMAND $NOTIFY_COMMAND_ARGS "parallely: $NAME command finished" "$COMMAND" || true

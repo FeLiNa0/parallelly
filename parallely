@@ -76,7 +76,8 @@ if ! [ -t 1 ]; then
 fi
 ENABLE_COLORS="${ENABLE_COLORS-true}"
 
-CMD_SHELL="${CMD_SHELL-$DEFAULT_CMD_SHELL $DEFAULT_CMD_SHELL_ARGS}"
+CMD_SHELL="${CMD_SHELL-$DEFAULT_CMD_SHELL}"
+CMD_SHELL_ARGS="${CMD_SHELL_ARGS-${DEFAULT_CMD_SHELL_ARGS}}"
 
 if [ -z "${SHOW_CMD_OUTPUT_CMD-}" ]; then
   SHOW_CMD_OUTPUT_CMD="$SHOW_CMD_OUTPUT_CMD_DEFAULT"
@@ -97,14 +98,16 @@ if [ -z "${NOTIFY_COMMAND-}" ]; then
     NOTIFY_COMMAND="notify-send"
   fi
 fi
+NOTIFY_COMMAND_ARGS="${NOTIFY_COMMAND_ARGS-}"
 
 if [ -z "${FAILURE_NOTIFY_COMMAND-}" ]; then
   if [ "$CLI_NOTIFY" = true ]; then
     FAILURE_NOTIFY_COMMAND="echo" 
   else
-    FAILURE_NOTIFY_COMMAND="notify-send --urgency=critical"
+    FAILURE_NOTIFY_COMMAND="notify-send"
   fi
 fi
+FAILURE_NOTIFY_COMMAND_ARGS="${FAILURE_NOTIFY_COMMAND_ARGS---urgency=critical}"
 
 SHOW_CONFIGURATION="${SHOW_CONFIGURATION-false}" 
 
@@ -284,7 +287,10 @@ help() {
   echo "        Special value: RAW."
   echo "          Run the commands directly, without using a shell."
   echo "          Use only if you know what you're doing."
-  echo "        Default: $DEFAULT_CMD_SHELL $DEFAULT_CMD_SHELL_ARGS"
+  echo "        Default: $DEFAULT_CMD_SHELL
+  echo "    --shell-command-args or set \$CMD_SHELL_ARGS:"
+  echo "        Arguments to pass to the shell
+  echo "        Default: $DEFAULT_CMD_SHELL_ARGS"
   echo "  Notifications configuration:"
   echo "    --notify-command or set \$NOTIFY_COMMAND:"
   echo "        Command to notify when a command succeeds."
@@ -296,6 +302,8 @@ help() {
   echo "        Should take two arguments, each possibly containing spaces."
   echo "        First argument is title, second is a description."
   echo "        Default: echo if \$CLI_NOTIFY is false, more visible GUI command otherwise."
+  echo "    --notify-command-args or set \$NOTIFY_COMMAND_ARGS"
+  echo "    --failure-notify-command-args or set \$FAILURE_NOTIFY_COMMAND_ARGS"
   echo
   echo "  Debug only:"
   echo "    --show-configuration or set \$SHOW_CONFIGURATION=true:"
@@ -339,7 +347,7 @@ help() {
   echo "    $SCRIPT_NAME test-exit 'echo failure && exit 1'"
   echo "    $SCRIPT_NAME test-statement 'if true; then echo 1; fi'"
   echo
-  echo "    Commands are run in the $DEFAULT_CMD_SHELL by default shell with: $CMD_SHELL \"\$COMMAND\""
+  echo "    Commands are run in the $DEFAULT_CMD_SHELL by default shell with: $CMD_SHELL $CMD_SHELL_ARGS \"\$COMMAND\""
   echo
   echo "  Commands are waited one at a time in order:"
   echo "    This means that you should list the fast commands first."
@@ -366,7 +374,7 @@ run_cmd() {
   TIME_FILE="$CMD_OUT_DIR/$NAME.time"
 
   verbose "Starting $NAME command $CURRENT_CMD/$NUM_CMDS"
-  verbose + "$CMD_SHELL" "$COMMAND"
+  verbose + "$CMD_SHELL" "$CMD_SHELL_ARGS" "$COMMAND"
 
   __run_cmd() {
     set -x
@@ -377,7 +385,7 @@ run_cmd() {
     if [ "$CMD_SHELL" = RAW ]; then
       $COMMAND
     else
-      $CMD_SHELL "$COMMAND"
+      $CMD_SHELL $CMD_SHELL_ARGS "$COMMAND"
     fi
   }
 
@@ -395,9 +403,9 @@ run_cmd() {
     echo "$(time_in_sec)" "$START_TIME" | awk '{print $1 - $2}' > "$TIME_FILE"
 
     if [ "$STATUS_CODE" = 0 ]; then
-      $NOTIFY_COMMAND "parallely: $NAME command finished" "$COMMAND" || true
+      $NOTIFY_COMMAND $NOTIFY_COMMAND_ARGS "parallely: $NAME command finished" "$COMMAND" || true
     else
-      $FAILURE_NOTIFY_COMMAND "parallely: $NAME command failed" "$COMMAND"
+      $FAILURE_NOTIFY_COMMAND $FAILURE_NOTIFY_COMMAND_ARGS "parallely: $NAME command failed" "$COMMAND"
     fi
     return "$STATUS_CODE"
   }
@@ -457,8 +465,11 @@ parse_option() {
     --sequential | -s) FORCE_SEQUENTIAL=true ;;
     --no-sequential) FORCE_SEQUENTIAL=false ;;
     --shell-command) validate_option_argument "$ARGUMENT" ; CMD_SHELL="$ARGUMENT" ;;
+    --shell-command-args) validate_option_argument "$ARGUMENT" ; CMD_SHELL_ARGS="$ARGUMENT" ;;
     --notify-command) validate_option_argument "$ARGUMENT" ; NOTIFY_COMMAND="$ARGUMENT" ;;
     --failure-notify-command) validate_option_argument "$ARGUMENT" ; FAILURE_NOTIFY_COMMAND="$ARGUMENT" ;;
+    --notify-command-args) validate_option_argument "$ARGUMENT" ; NOTIFY_COMMAND_ARGS="$ARGUMENT" ;;
+    --failure-notify-command-args) validate_option_argument "$ARGUMENT" ; FAILURE_NOTIFY_COMMAND_ARGS="$ARGUMENT" ;;
     --show-configuration) SHOW_CONFIGURATION=true ;;
     --debug) DEBUG=true ;;
     --trace) set -x ;;
@@ -622,10 +633,13 @@ show_configuration() {
   log "PARALLELY_SHOW_ALL_OUTPUT=$PARALLELY_SHOW_ALL_OUTPUT"
   log "PARALLELY_EMOJI_OUTPUT=$PARALLELY_EMOJI_OUTPUT"
   log "CMD_SHELL=$CMD_SHELL"
+  log "CMD_SHELL_ARGS=$CMD_SHELL_ARGS"
   log "FORCE_SEQUENTIAL=$FORCE_SEQUENTIAL"
   log "SHOW_CMD_OUTPUT_CMD=$SHOW_CMD_OUTPUT_CMD"
   log "NOTIFY_COMMAND=$NOTIFY_COMMAND"
   log "FAILURE_NOTIFY_COMMAND=$FAILURE_NOTIFY_COMMAND"
+  log "NOTIFY_COMMAND_ARGS=$NOTIFY_COMMAND_ARGS"
+  log "FAILURE_NOTIFY_COMMAND_ARGS=$FAILURE_NOTIFY_COMMAND_ARGS"
   log "ENABLE_COLORS=$ENABLE_COLORS"
   log "Temporary directory CMD_OUT_DIR=$CMD_OUT_DIR"
   log

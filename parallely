@@ -18,7 +18,9 @@ fi
 
 show_debug_info() {
   debug "PPID=$PPID"
-  debug "Parent process name: $(ps -p $PPID -o comm=)"
+  if command -v ps > /dev/null; then
+    debug "Parent process name: $(ps -p $PPID -o comm=)"
+  fi
   debug "Is a TTY: $IS_A_TTY"
   debug "Colors supported: $COLORS_SUPPORTED"
 }
@@ -32,7 +34,7 @@ FAILED_MARKER="____PARALLELY_FAILED____"
 # For some reason, plain "\n" doesn't work with test
 NEWLINE="$(printf "\n")"
 
-COLORS_SUPPORTED="$(tput colors)"
+COLORS_SUPPORTED="$(tput colors 2>/dev/null || echo 0)"
 if [ -t 1 ]; then
   IS_A_TTY=true
 else
@@ -58,12 +60,23 @@ UNKNOWN_SHORT_OPTION_EXIT_CODE=82
 MISSING_OPTARG_EXIT_CODE=85
 REPEATED_NAME_EXIT_CODE=86
 NO_ARGUMENTS_EXIT_CODE=89
+
 CONFIGURABLE_COMMAND_NOT_EXECUTABLE_EXIT_CODE=90
+REQUIRED_COMMAND_NOT_FOUND_EXIT_CODE=99
 
 # Remember to update this variable!
-EXIT_CODE_MAX="$CONFIGURABLE_COMMAND_NOT_EXECUTABLE_EXIT_CODE"
+EXIT_CODE_MAX="$REQUIRED_COMMAND_NOT_FOUND_EXIT_CODE"
 
 COMMANDS_FAILED_EXIT_CODE=22
+
+############## Utility functions
+
+require_command() {
+  if ! command -v "$1" > /dev/null; then
+    echo ERROR: The \'"$1"\' command is required to run this script "$@"
+    exit "$REQUIRED_COMMAND_NOT_FOUND_EXIT_CODE"
+  fi
+}
 
 ############## Constants, but they might become configurable
 DEFAULT_CMD_SHELL="sh"
@@ -94,9 +107,9 @@ PARALLELY_EMOJI_OUTPUT="${PARALLELY_EMOJI_OUTPUT-true}"
 
 FORCE_SEQUENTIAL="${FORCE_SEQUENTIAL-false}"
 
-# If output is not a tty or the terminal supports less than 8 colors
+# If output is not a tty or the terminal supports less than 8 colors or tput not installed
 # disable colors
-if [ "$COLORS_SUPPORTED" -lt 8 ] || ! [ "$IS_A_TTY" = true ]; then
+if ( ! command -v tput > /dev/null ) || ( ! [ "$IS_A_TTY" = true ] ) || [ "$COLORS_SUPPORTED" -lt 8 ]; then
   ENABLE_COLORS="${ENABLE_COLORS-false}"
 fi
 ENABLE_COLORS="${ENABLE_COLORS-true}"
@@ -108,6 +121,10 @@ CMD_SHELL_ARGS="${CMD_SHELL_ARGS-${DEFAULT_CMD_SHELL_ARGS}}"
 
 SHOW_CMD_OUTPUT_CMD_ARGS="${SHOW_CMD_OUTPUT_CMD_ARGS-$SHOW_CMD_OUTPUT_CMD_ARGS_DEFAULT}"
 SHOW_CMD_OUTPUT_CMD="${SHOW_CMD_OUTPUT_CMD-$SHOW_CMD_OUTPUT_CMD_DEFAULT}"
+
+if [ -z "${PARALLELY_TMP_DIR-}" ]; then
+  require_command mktemp "or set \$PARALLELY_TMP_DIR"
+fi
 
 PARALLELY_TMP_DIR="${PARALLELY_TMP_DIR-$(mktemp --directory)}"
 
@@ -314,7 +331,10 @@ help() {
   log_color "$UNDEREMPH" "underemphasized."
   echo "          This color may not show up well on a light background."
   echo "          Use --light-mode in this case."
-  echo "        Default: true if output is a tty and tput colors>=8, false otherwise."
+  echo "        Default: true only if"
+  echo "            - output is a tty and tput colors>=8, false otherwise."
+  echo "            - tput is installed"
+  echo "            - tput colors>=8"
   echo "          tput colors = $COLORS_SUPPORTED"
   echo "          is a tty = $([ "$IS_A_TTY" = true ] && echo yes || echo no)"
   echo "    --light-mode|--no-light-mode or set \$LIGHT_MODE=true: "
@@ -469,7 +489,7 @@ run_cmd() {
     set +eu
     ( __run_cmd "$NAME" "$COMMAND" > "$STDOUT_FILE" 2> "$STDERR_FILE" )
     STATUS_CODE="$?"
-    echo "$(time_in_sec)" "$LOCAL_START_TIME" | awk '{print $1 - $2}' > "$TIME_FILE"
+    ( echo "$(time_in_sec)" "$LOCAL_START_TIME" | awk '{print $1 - $2}' || echo "UNKNOWN" ) > "$TIME_FILE"
 
     if [ "$STATUS_CODE" = 0 ]; then
       $NOTIFY_COMMAND $NOTIFY_COMMAND_ARGS "parallely: $NAME command finished" "$COMMAND" || true
@@ -498,6 +518,16 @@ run_cmd() {
   PID_FILE="$CMD_OUT_DIR/$PID"
   echo "$NAME" > "$PID_FILE"
 }
+
+############## Dependency checks
+
+require_command wc
+require_command grep
+require_command mkdir
+require_command rm
+require_command cat
+require_command echo
+require_command printf
 
 ############## main()
 
@@ -613,7 +643,13 @@ fi
 
 # Used to handle the --tmp-dir argument
 make_readable_tmp_dir() {
-  CMD_OUT_DIR="$PARALLELY_TMP_DIR/$SCRIPT_NAME-logs-$(whoami)-$(date +%Y-%m-%d)"
+  if command -v whoami > /dev/null && command -v date > /dev/null; then
+    TMP_DIR_SUFFIX="-$(whoami)-$(date +%Y-%m-%d)"
+  else
+    error whomai or date not installed
+    TMP_DIR_SUFFIX=
+  fi
+  CMD_OUT_DIR="$PARALLELY_TMP_DIR/$SCRIPT_NAME-logs$TMP_DIR_SUFFIX"
   if [ -d "$CMD_OUT_DIR" ]; then
     debug WARNING Temporary directory exists. Deleting "$CMD_OUT_DIR"
     rm -rf "$CMD_OUT_DIR"
@@ -770,7 +806,7 @@ if [ "$PARALLELY_VERBOSE_OUTPUT" = true ] || [ "$SHOW_CONFIGURATION" = true ]; t
   show_configuration
 fi
 
-############## Exit of no pairs given
+############## Exit if no pairs given
 
 if ! [ -f "$NAMES_FILE" ]; then
   if [ "$OK_IF_NO_PAIRS" = true ]; then
@@ -794,6 +830,8 @@ fi
 log "$SCRIPT_NAME will run $NUM_CMDS commands $RUN_METHOD $(emoji rocket)"
 
 ############## Main loop
+
+require_command date
 
 # Iterate through all given command line arguments.
 # Run each one as a command in parallel, saving its output to a tmp file.

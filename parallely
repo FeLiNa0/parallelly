@@ -85,9 +85,9 @@ PARALLELY_EMOJI_OUTPUT="${PARALLELY_EMOJI_OUTPUT-true}"
 
 FORCE_SEQUENTIAL="${FORCE_SEQUENTIAL-false}"
 
-# If output is not a tty
+# If output is not a tty or the terminal supports less than 8 colors
 # disable colors
-if ! [ -t 1 ]; then
+if [ "$COLORS_SUPPORTED" -lt 8 ] || ! [ "$IS_A_TTY" = true ]; then
   ENABLE_COLORS="${ENABLE_COLORS-false}"
 fi
 ENABLE_COLORS="${ENABLE_COLORS-true}"
@@ -306,7 +306,9 @@ help() {
   log_color "$UNDEREMPH" "underemphasized."
   echo "          This color may not show up well on a light background."
   echo "          Use --light-mode in this case."
-  echo "        Default: true if output is a tty, false otherwise."
+  echo "        Default: true if output is a tty and tput colors>=8, false otherwise."
+  echo "          tput colors = $COLORS_SUPPORTED"
+  echo "          is a tty = $([ "$IS_A_TTY" = true ] && echo yes || echo no)"
   echo "    --light-mode|--no-light-mode or set \$LIGHT_MODE=true: "
   echo "    --command-output-command|--cc or set \$SHOW_CMD_OUTPUT_CMD:"
   echo "        Command for printing stderr and stdout of a command"

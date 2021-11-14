@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/bin/sh
 
 # TODO mark each global variable
 # TODO are there local variables in POSIX shellscripts?

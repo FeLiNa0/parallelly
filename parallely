@@ -159,6 +159,7 @@ if [ -z "${FAILURE_NOTIFY_COMMAND-}" ]; then
 fi
 
 SHOW_CONFIGURATION="${SHOW_CONFIGURATION-false}" 
+SHOW_PIDS="${SHOW_PIDS-false}" 
 
 ############## Functions to help generate output
 BLUE=4
@@ -391,6 +392,9 @@ help() {
   echo "  Debug only:"
   echo "    --show-configuration or set \$SHOW_CONFIGURATION=true:"
   echo "        Print configuration."
+  echo "    --show-pids or set \$SHOW_PIDS=true:"
+  echo "        Print process IDs of background jobs."
+  echo "        Incompatible with --sequential."
   echo "    --debug or set \$DEBUG=true"
   echo "    --trace or set \$TRACE=true:"
   echo "        Run 'set -x'"
@@ -515,6 +519,9 @@ run_cmd() {
   if ! [ "$FORCE_SEQUENTIAL" = true ]; then
     __run_time_notify_capture_cmd "$NAME" "$COMMAND" &
     PID="$!"
+    if [ "$SHOW_PIDS" = true ]; then
+      log "PID=$PID for command $NAME"
+    fi
   else
     log "FORCE_SEQUENTIAL is set: Waiting for command $NAME to finish"
     if __run_time_notify_capture_cmd "$NAME" "$COMMAND"; then
@@ -609,6 +616,7 @@ parse_option() {
     --notify-command-args) PARSED_ARGUMENT=true ; NOTIFY_COMMAND_ARGS="$ARGUMENT" ;;
     --failure-notify-command-args) PARSED_ARGUMENT=true ; FAILURE_NOTIFY_COMMAND_ARGS="$ARGUMENT" ;;
     --show-configuration) SHOW_CONFIGURATION=true ; OK_IF_NO_PAIRS=true ;;
+    --show-pids) SHOW_PIDS=true ;;
     --debug) DEBUG=true ; OK_IF_NO_PAIRS=true ;;
     --trace) TRACE=true ; OK_IF_NO_PAIRS=true ;;
     --*=*)
@@ -757,6 +765,10 @@ done
 
 ############## Validate arguments and set variables that depend on arguments
 
+if [ "$SHOW_PIDS" = true ] && [ "$FORCE_SEQUENTIAL" = true ]; then
+  error "Will not show PIDs when --sequential is set"
+fi
+
 # Handle the --tmp-dir argument
 if ! [ "$ORIGINAL_TMP_DIR" = "$PARALLELY_TMP_DIR" ]; then
   make_readable_tmp_dir
@@ -814,6 +826,8 @@ show_configuration() {
   log "FAILURE_NOTIFY_COMMAND_ARGS=$FAILURE_NOTIFY_COMMAND_ARGS"
   log "ENABLE_COLORS=$ENABLE_COLORS"
   log "LIGHT_MODE=$LIGHT_MODE"
+  log "SHOW_CONFIGURATION=$SHOW_CONFIGURATION"
+  log "SHOW_PIDS=$SHOW_PIDS"
   log "Temporary directory CMD_OUT_DIR=$CMD_OUT_DIR"
   log
 }

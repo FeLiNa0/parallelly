@@ -171,7 +171,7 @@ Examples:
     The names are used in notifications and files storing outout.
 
 Contributors: Hugo O. Rivera
-Version: 1.8.1
+Version: 1.8.2
 
 ```
 
@@ -713,7 +713,7 @@ LIGHT_MODE=true
 Temporary directory CMD_OUT_DIR=/tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14
 
 $ parallely --version
-1.8.1
+1.8.2
 $ parallely --debug
 DEBUG: arglog: Remaining (0)
 DEBUG: PPID=<omitted>

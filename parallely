@@ -385,6 +385,9 @@ run_cmd() {
   else
     verbose + "$CMD_SHELL" "$CMD_SHELL_ARGS" "$COMMAND"
   fi
+  verbose "See output at:"
+  verbose "$STDERR_FILE"
+  verbose "$STDOUT_FILE"
 
   __run_cmd() {
     NAME="$1"

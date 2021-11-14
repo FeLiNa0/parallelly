@@ -377,10 +377,8 @@ run_cmd() {
   verbose + "$CMD_SHELL" "$CMD_SHELL_ARGS" "$COMMAND"
 
   __run_cmd() {
-    set -x
     NAME="$1"
     COMMAND="$2"
-    echo "$NAME" "$COMMAND"
 
     if [ "$CMD_SHELL" = RAW ]; then
       $COMMAND

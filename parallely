@@ -576,7 +576,7 @@ while [ "$#" -gt 0 ]; do
 
   # Check for repeated names
   if [ -f "$NAMES_FILE" ]; then
-    if grep "^$CURRENT_NAME$" "$NAMES_FILE" &> /dev/null; then
+    if grep "^$CURRENT_NAME$" "$NAMES_FILE" 2>&1 > /dev/null; then
       error "Duplicate name $CURRENT_NAME detected. Please rename."
       exit "$REPEATED_NAME_EXIT_CODE"
     fi
@@ -606,7 +606,7 @@ fi
 check_is_exec() {
   CMD_NAME="$1"
   CMD="$(echo "$2" | cut -f1 -d' ')"
-  if ! command -v "$CMD" > /dev/null || [ -x "$CMD_NAME" ]; then
+  if ! command -v "$CMD" 2>&1 > /dev/null || [ -x "$CMD_NAME" ]; then
     error "Please change $CMD_NAME, \"$CMD\" is not executable."
     exit "$CONFIGURABLE_COMMAND_NOT_EXECUTABLE_EXIT_CODE"
   fi
@@ -698,7 +698,7 @@ subtract_two_floats() {
   A="$1"
   B="$2"
   SUBTRACT_FAILURE=false
-  if command -v awk &> /dev/null; then
+  if command -v awk 2>&1 > /dev/null; then
     if ! echo "$A" "$B" | awk '{print $1-$2}'; then
       error "awk is not working! Please redefine the subtract_two_floats function"
       SUBTRACT_FAILURE=true

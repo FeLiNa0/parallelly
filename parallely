@@ -24,11 +24,16 @@ NEWLINE="$(printf "\n")"
 
 ############## Exit codes
 # Please skip 88
+LONG_OPTION_WITH_EQUALS_EXIT_CODE=51
+COMPOUND_SHORT_OPTION_EXIT_CODE=52
+MORE_THAN_TWO_OPTION_DASHES_EXIT_CODE=53
+
 NOT_ENOUGH_ARGUMENTS_EXIT_CODE=72
 NO_NAMECOMMANDPAIRSS_EXIT_CODE=71
+
 UNKNOWN_LONG_OPTION_EXIT_CODE=81
 UNKNOWN_SHORT_OPTION_EXIT_CODE=82
-COMPOUND_SHORT_OPTION_EXIT_CODE=83
+
 MISSING_OPTARG_EXIT_CODE=85
 REPEATED_NAME_EXIT_CODE=86
 NO_ARGUMENTS_EXIT_CODE=89
@@ -446,7 +451,11 @@ parse_option() {
     --*=*)
       error "Long options with argument set with = are not allowed: given $OPTION"
       log "Use --option argument instead of --option=argument"
-      exit "$UNKNOWN_LONG_OPTION_EXIT_CODE"
+      exit "$LONG_OPTION_WITH_EQUALS_EXIT_CODE"
+      ;;
+    ---*)
+      error "More than two dashes detected in option $OPTION"
+      exit "$MORE_THAN_TWO_OPTION_DASHES_EXIT_CODE"
       ;;
     --*)
       error Unrecognized option "$OPTION"

@@ -18,61 +18,73 @@ Description:
     See examples in section below.
 
 USAGE:
-    parallely [-h|--help]
-    parallely [cmd_name cmd_with_arguments]+
+    parallely -h|--help|-v|--version|<other options> [cmd_name cmd_with_arguments]+
 
     One or more pairs of cmd_name followed by cmd_with_arguments are expected.
 
-    --help|-h            Print this message.
     cmd_name             A short and filesafe name for the following command.
                          Used in notifications and files storing output.
                          A cmd_with_arguments should always follow these args.
     cmd_with_arguments   An escaped command to run in parallel
 
-Environment variables:
-  Output:
-    $PARALLELY_VERBOSE_OUTPUT:
+    -h|--help            Print this message.
+    -v|--version         Print version of this script.
+
+Configuration:
+  Options take priority over environment variables.
+  Options can go in between a name and its command.
+  Use --show-configuration or --verbose to see configuration.
+
+  Output configuration:
+    --verbose|-V|--no-verbose or set $PARALLELY_VERBOSE_OUTPUT=true:
         Whether to print verbose logs.
         If colors are enabled, logs are colored.
         Default: false or value of $VERBOSE if it is set
-    $PARALLELY_EMOJI_OUTPUT:
-        Whether to print emoji.
-        Default: true if output is a tty and $DISPLAY is set, false otherwise.
-    $PARALLELY_SHOW_ALL_OUTPUT:
+    --all-output|-a|--not-all-output or set $PARALLELY_SHOW_ALL_OUTPUT=true:
         Whether to print command output for successful commands too.
         Default: false or value of $ALL_OUTPUT if it is set
-    $ENABLE_COLORS: 
+    --emoji|-e|--no-emoji|-z or set $PARALLELY_EMOJI_OUTPUT=true:
+        Whether to print emoji.
+        Default: true if output is a tty and $DISPLAY is set, false otherwise.
+    --color|-c|--no-color|-n or set $ENABLE_COLORS=true: 
         If enabled, errors are colored.
         Default: true if output is a tty, false otherwise.
-    $SHOW_CMD_OUTPUT_CMD:
+    --command-output-command or set $SHOW_CMD_OUTPUT_CMD:
         Command for printing stderr and stdout of a command/
         Default: tail -n1
         Example values:
           Show all output: cat
           Show last ten lines: tail -n10
           Show output for each command one at a time: less
-  Running commands:
-    $CMD_SHELL:
-        Which shell to run the commands in.
-        Default: sh -c
-    $FORCE_SEQUENTIAL:
+  Running commands configuration:
+    --sequential|-s|--no-sequential or set $FORCE_SEQUENTIAL=true:
         Run commands sequentially instead of in parallel.
         Useful if you just want to capture output and get notifications.
         Default: false
-  Notifications:
-    $CLI_NOTIFY:
-        Whether to use GUI to notify when a command finishes.
-        Default: false if $DISPLAY is set, false otherwise.
-    $NOTIFY_COMMAND:
+    --shell-command or set $CMD_SHELL:
+        Which shell to run the commands in.
+        Special value: RAW.
+          Run the commands directly, without using a shell.
+          Use only if you know what you're doing.
+        Default: sh -c
+  Notifications configuration:
+    --notify-command or set $NOTIFY_COMMAND:
         Command to notify when a command succeeds.
         Should take two arguments, each possibly containing spaces.
         First argument is title, second is a description.
         Default: echo if $CLI_NOTIFY is false, GUI command otherwise.
-    $FAILURE_NOTIFY_COMMAND:
+    --failure-notify-command or set $FAILURE_NOTIFY_COMMAND:
         Command to notify when a command fails.
         Should take two arguments, each possibly containing spaces.
         First argument is title, second is a description.
         Default: echo if $CLI_NOTIFY is false, more visible GUI command otherwise.
+
+  Debug only:
+    --show-configuration or set $SHOW_CONFIGURATION=true:
+        Print configuration.
+    --debug or set $DEBUG=true
+    --trace or set $TRACE=true:
+        Run 'set -x'
 
 Examples:
 
@@ -81,8 +93,10 @@ Examples:
       fail-printf-nonewline 'printf "%s %s"\ abc 123 ; false' \
       fail-rsync-src 'rsync -rhP nonexistentdir backup' \
       delay 'sleep 0.2' \
+      ok-and-output 'echo test ; echo stderr test >&2' \
       fail-slower-delay '! sleep 0.4' \
-      fail-no-output 'exit 210'
+      fail-no-output 'exit 210' \
+      'long name for command with spaces' 'true && echo ok'
 
     The odd numbered arguments are short, filesafe names for each command.
     The names are used in notifications and files storing outout.
@@ -91,6 +105,9 @@ Examples:
     parallely list-files ls
 
   Verbose output and a command without arguments:
+    parallely -V list-files ls
+    parallely list-files ls -V
+    parallely list-files -V ls
     VERBOSE=true parallely list-files ls
     PARALLELY_VERBOSE_OUTPUT=true parallely list-files ls
 
@@ -104,7 +121,7 @@ Examples:
     parallely test-exit 'echo failure && exit 1'
     parallely test-statement 'if true; then echo 1; fi'
 
-    Commands are run in the sh shell with: sh -c "$COMMAND"
+    Commands are run in the sh by default shell with: sh -c "$COMMAND"
 
   Commands are waited one at a time in order:
     This means that you should list the fast commands first.
@@ -117,7 +134,7 @@ Examples:
     VERBOSE=true CLI_NOTIFY=true parallely 3 'sleep 2' 2 'sleep 1' 1 'sleep 0.1'
 
 Contributors: Hugo O. Rivera
-Version: 1.6.0
+Version: 1.7.0
 
 ```
 

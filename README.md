@@ -246,3 +246,8 @@ Use shellcheck to check shellscripts.
 ```
 make check
 ```
+
+
+## Similar programs
+
+Pytest has good output capturing, xargs is great for running commands in parallel, and the fast rsync parallelization I wrote in my dotfiles repo https://github.com/roguh/confs/blob/4625d6ac8efc1365beb3ef3b0c47e5c4b554cd68/update.sh

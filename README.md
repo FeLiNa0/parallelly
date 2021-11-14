@@ -171,7 +171,7 @@ Examples:
     The names are used in notifications and files storing outout.
 
 Add synchronized swimming to your CLI!
-Version: 1.8.3
+Version: 1.8.4
 
 ```
 
@@ -346,7 +346,7 @@ $ parallely \
     sleep9 'sleep 0.1' \
     sleep0 'sleep 0.1'
 parallely will run 10 commands in parallel 
-10 commands finished in 0.2 seconds.
+10 commands finished in 0.3 seconds.
 + echo
 
 $ parallely \
@@ -371,7 +371,7 @@ FORCE_SEQUENTIAL is set: Waiting for command sleep7 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep8 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep9 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep0 to finish
-10 commands finished in 1.2 seconds.
+10 commands finished in 1.3 seconds.
 
 ```
 
@@ -726,7 +726,7 @@ Temporary directory CMD_OUT_DIR=/tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14
 
 $ parallely \
     --version
-1.8.3
+1.8.4
 $ parallely \
     --debug
 DEBUG: arglog: Remaining (0)

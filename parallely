@@ -109,6 +109,8 @@ CMD_SHELL_ARGS="${CMD_SHELL_ARGS-${DEFAULT_CMD_SHELL_ARGS}}"
 SHOW_CMD_OUTPUT_CMD_ARGS="${SHOW_CMD_OUTPUT_CMD_ARGS-$SHOW_CMD_OUTPUT_CMD_ARGS_DEFAULT}"
 SHOW_CMD_OUTPUT_CMD="${SHOW_CMD_OUTPUT_CMD-$SHOW_CMD_OUTPUT_CMD_DEFAULT}"
 
+PARALLELY_TMP_DIR="${PARALLELY_TMP_DIR-$(mktemp --directory)}"
+
 # If $DISPLAY is not set
 # use CLI to notify about commands finishing
 if [ -z "${DISPLAY-}" ]; then
@@ -320,9 +322,13 @@ help() {
   echo "        Command for printing stderr and stdout of a command"
   echo "        If this argument is passed, --cc-args is set to '' by default."
   echo "        Default: $SHOW_CMD_OUTPUT_CMD_DEFAULT"
-  echo "    --command-output-command-args|--cc-args  or set \$SHOW_CMD_OUTPUT_CMD_ARG:"
+  echo "    --command-output-command-args|--cc-args  or set \$SHOW_CMD_OUTPUT_CMD_ARGS:"
   echo "        Arguments for command for printing stderr and stdout of a command"
   echo "        Default: $SHOW_CMD_OUTPUT_CMD_ARGS_DEFAULT"
+  echo "    --tmp-dir  or set \$PARALLELY_TMP_DIR:"
+  echo "        If you don't have \`mktemp\` on your system, you must set this"
+  echo "        option with the environment variable!"
+  echo "        Default: created using \'mktemp\'"
   echo "  Running commands configuration:"
   echo "    --sequential|-s|--no-sequential or set \$FORCE_SEQUENTIAL=true:"
   echo "        Run commands sequentially instead of in parallel."
@@ -500,9 +506,6 @@ show_debug_info
 ############## Other variables
 CURRENT_CMD=0
 
-CMD_OUT_DIR="$(mktemp --directory)/$SCRIPT_NAME-logs-$(whoami)-$(date +%Y-%m-%d)"
-mkdir -p "$CMD_OUT_DIR"
-
 # The presence of some arguments indicates that the program can exit
 # with status code 0 even if there are no name/command pairs.
 OK_IF_NO_PAIRS=false
@@ -552,6 +555,7 @@ parse_option() {
     --no-light-mode) LIGHT_MODE=false ;;
     --command-output-command | --cc) validate_option_argument "$ARGUMENT" ; SHOW_CMD_OUTPUT_CMD_ARGS='' ; SHOW_CMD_OUTPUT_CMD="$ARGUMENT" ;;
     --command-output-command-args | --cc-args) PARSED_ARGUMENT=true ; SHOW_CMD_OUTPUT_CMD_ARGS="$ARGUMENT" ;;
+    --tmp-dir) PARSED_ARGUMENT=true ; PARALLELY_TMP_DIR="$ARGUMENT" ;;
     --sequential | -s) FORCE_SEQUENTIAL=true ;;
     --no-sequential) FORCE_SEQUENTIAL=false ;;
     --shell-command) validate_option_argument "$ARGUMENT" ; CMD_SHELL="$ARGUMENT" ;;
@@ -607,6 +611,23 @@ if [ "$#" = 0 ]; then
   exit "$NO_ARGUMENTS_EXIT_CODE"
 fi
 
+# Used to handle the --tmp-dir argument
+make_readable_tmp_dir() {
+  CMD_OUT_DIR="$PARALLELY_TMP_DIR/$SCRIPT_NAME-logs-$(whoami)-$(date +%Y-%m-%d)"
+  if [ -d "$CMD_OUT_DIR" ]; then
+    debug WARNING Temporary directory exists. Deleting "$CMD_OUT_DIR"
+    rm -rf "$CMD_OUT_DIR"
+  fi
+  if [ -n "${ORIGINAL_CMD_OUT_DIR-}" ]; then
+    mv "$ORIGINAL_CMD_OUT_DIR/" "$CMD_OUT_DIR/"
+  fi
+  ORIGINAL_CMD_OUT_DIR="$CMD_OUT_DIR"
+  ORIGINAL_TMP_DIR="$PARALLELY_TMP_DIR"
+  mkdir -p "$CMD_OUT_DIR"
+}
+
+make_readable_tmp_dir
+# Make sure to move this file if passed the --tmp-dir argument!
 NAMES_FILE="$CMD_OUT_DIR/names"
 debug "arglog: Will parse ($#) arguments:"
 for arg in "$@"; do
@@ -678,11 +699,20 @@ while [ "$#" -gt 0 ]; do
   # Save command so it can be accessed by command name.
   # Since we can't guarantee access to bash arrays, we don't have a way to
   # save commands that contain whitespace or nested strings properly.
+
+  # Make sure to move this file if passed the --tmp-dir argument!
   COMMAND_FILE="$CMD_OUT_DIR/$CURRENT_NAME.command"
   echo "$CURRENT_COMMAND" > "$COMMAND_FILE"
 done
 
 ############## Validate arguments and set variables that depend on arguments
+
+# Handle the --tmp-dir argument
+if ! [ "$ORIGINAL_TMP_DIR" = "$PARALLELY_TMP_DIR" ]; then
+  make_readable_tmp_dir
+  COMMAND_FILE="$CMD_OUT_DIR/$CURRENT_NAME.command"
+  NAMES_FILE="$CMD_OUT_DIR/names"
+fi
 
 show_debug_info
 
@@ -725,6 +755,7 @@ show_configuration() {
   log "FORCE_SEQUENTIAL=$FORCE_SEQUENTIAL"
   log "SHOW_CMD_OUTPUT_CMD=$SHOW_CMD_OUTPUT_CMD"
   log "SHOW_CMD_OUTPUT_CMD_ARGS=$SHOW_CMD_OUTPUT_CMD_ARGS"
+  log "PARALLELY_TMP_DIR=$PARALLELY_TMP_DIR"
   log "NOTIFY_COMMAND=$NOTIFY_COMMAND"
   log "FAILURE_NOTIFY_COMMAND=$FAILURE_NOTIFY_COMMAND"
   log "NOTIFY_COMMAND_ARGS=$NOTIFY_COMMAND_ARGS"

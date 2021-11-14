@@ -128,16 +128,6 @@ FAILURE_NOTIFY_COMMAND_ARGS="${FAILURE_NOTIFY_COMMAND_ARGS---urgency=critical}"
 
 SHOW_CONFIGURATION="${SHOW_CONFIGURATION-false}" 
 
-############## Other variables
-CURRENT_CMD=0
-
-CMD_OUT_DIR="$(mktemp --directory)/$SCRIPT_NAME-logs-$(whoami)-$(date +%Y-%m-%d)"
-mkdir -p "$CMD_OUT_DIR"
-
-# Stores array of PIDs of commands that were started
-# Due to POSIX compatibility, we can't use arrays.
-pids=""
-
 ############## Functions to help generate output
 BLUE=4
 RED=1
@@ -478,6 +468,20 @@ run_cmd() {
 
 show_debug_info
 
+############## Other variables
+CURRENT_CMD=0
+
+CMD_OUT_DIR="$(mktemp --directory)/$SCRIPT_NAME-logs-$(whoami)-$(date +%Y-%m-%d)"
+mkdir -p "$CMD_OUT_DIR"
+
+# The presence of some arguments indicates that the program can exit
+# with status code 0 even if there are no name/command pairs.
+OK_IF_NO_PAIRS=false
+
+# Stores array of PIDs of commands that were started
+# Due to POSIX compatibility, we can't use arrays.
+pids=""
+
 ############## Parse arguments
 
 validate_option_argument() {
@@ -527,9 +531,9 @@ parse_option() {
     --failure-notify-command) validate_option_argument "$ARGUMENT" ; FAILURE_NOTIFY_COMMAND="$ARGUMENT" ;;
     --notify-command-args) PARSED_ARGUMENT=true ; NOTIFY_COMMAND_ARGS="$ARGUMENT" ;;
     --failure-notify-command-args) PARSED_ARGUMENT=true ; FAILURE_NOTIFY_COMMAND_ARGS="$ARGUMENT" ;;
-    --show-configuration) SHOW_CONFIGURATION=true ;;
-    --debug) DEBUG=true ;;
-    --trace) TRACE=true ;;
+    --show-configuration) SHOW_CONFIGURATION=true ; OK_IF_NO_PAIRS=true ;;
+    --debug) DEBUG=true ; OK_IF_NO_PAIRS=true ;;
+    --trace) TRACE=true ; OK_IF_NO_PAIRS=true ;;
     --*=*)
       error "Long options with argument set with = are not allowed: given $OPTION"
       log "Use --option argument instead of --option=argument"
@@ -657,13 +661,6 @@ if [ "$TRACE" = true ]; then
   set -x
 fi
 
-if ! [ -f "$NAMES_FILE" ]; then
-  error Expected one or more name+command pairs as arguments.
-  exit "$NO_NAMECOMMANDPAIRSS_EXIT_CODE"
-else
-  NUM_CMDS="$(cat "$NAMES_FILE" | wc -l)"
-fi
-
 check_is_exec() {
   CMD_NAME="$1"
   CMD="$2"
@@ -709,6 +706,25 @@ show_configuration() {
   log
 }
 
+if [ "$PARALLELY_VERBOSE_OUTPUT" = true ] || [ "$SHOW_CONFIGURATION" = true ]; then
+  show_configuration
+fi
+
+############## Exit of no pairs given
+
+if ! [ -f "$NAMES_FILE" ]; then
+  if [ "$OK_IF_NO_PAIRS" = true ]; then
+    exit 0
+  else
+    error Expected one or more name+command pairs as arguments.
+    exit "$NO_NAMECOMMANDPAIRSS_EXIT_CODE"
+  fi
+else
+  NUM_CMDS="$(cat "$NAMES_FILE" | wc -l)"
+fi
+
+############## Print message before running all commands
+
 if [ "$FORCE_SEQUENTIAL" = true ]; then
   RUN_METHOD=sequentially
 else
@@ -716,10 +732,6 @@ else
 fi
 
 log "$SCRIPT_NAME will run $NUM_CMDS commands $RUN_METHOD $(emoji rocket)"
-
-if [ "$PARALLELY_VERBOSE_OUTPUT" = true ] || [ "$SHOW_CONFIGURATION" = true ]; then
-  show_configuration
-fi
 
 ############## Main loop
 

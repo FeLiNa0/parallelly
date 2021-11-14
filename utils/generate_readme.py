@@ -23,6 +23,7 @@ DEMO_MARKER = "<DEMO_OUTPUT>"
 DEMO_DIRECTORY = "tests/demos/"
 ACCEPTABLE_DEMO_EXIT_CODES = [0, 22]
 
+PARALLELY_SECONDS_MARKER = " seconds."
 PARALLELY_CMD_MARKER = "+ parallely"
 PARALLELY_CMD_MARKER_REPLACEMENT = "$ parallely"
 
@@ -41,6 +42,14 @@ def wrap_command(output: List[str]) -> None:
         if line.startswith(PARALLELY_CMD_MARKER):
             output[i] = re.sub("' ", "' \\\n    ", line).replace(
                 PARALLELY_CMD_MARKER, PARALLELY_CMD_MARKER_REPLACEMENT
+            )
+
+
+def round_seconds(output: List[str]) -> None:
+    for i, line in enumerate(output):
+        if line.endswith(PARALLELY_SECONDS_MARKER):
+            output[i] = re.sub(
+                f"(\\d+.\\d)\\d+({PARALLELY_SECONDS_MARKER})", "\\1\\2", line
             )
 
 
@@ -74,8 +83,8 @@ def get_demo_output() -> str:
         # Convert to lines
         output: List[str] = output_str.split("\n")
 
-        # Wrap command
         wrap_command(output)
+        round_seconds(output)
 
         found_code = False
         for i, line in enumerate(output):

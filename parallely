@@ -314,19 +314,6 @@ help() {
   echo
   echo "Examples:"
   echo
-  echo "  Multiple commands:"
-  echo "    $SCRIPT_NAME fail 'echo failure && exit 1' \\"
-  echo "      fail-printf-nonewline 'printf \"%s %s\"\\ abc 123 ; false' \\"
-  echo "      fail-rsync-src 'rsync -rhP nonexistentdir backup' \\"
-  echo "      delay 'sleep 0.2' \\"
-  echo "      ok-and-output 'echo test ; echo stderr test >&2' \\"
-  echo "      fail-slower-delay '! sleep 0.4' \\"
-  echo "      fail-no-output 'exit 210' \\"
-  echo "      'long name for command with spaces' 'true && echo ok'"
-  echo
-  echo "    The odd numbered arguments are short, filesafe names for each command." 
-  echo "    The names are used in notifications and files storing outout."
-  echo
   echo "  A command without arguments:"
   echo "    $SCRIPT_NAME list-files ls"
   echo
@@ -343,6 +330,10 @@ help() {
   echo "  A command with arguments that have spaces in them:"
   echo "    $SCRIPT_NAME printf-abc 'printf \"%s %s\" abc 123'"
   echo
+  echo "  Show more or all command output"
+  echo "    $SCRIPT_NAME multi-line-output --all-output --cc-args '-n5' 'echo 1; echo 2; echo 3; printf \"%s %s\" abc 123'"
+  echo "    $SCRIPT_NAME multi-line-output --all-output --cc cat --cc-args '' 'echo 1; echo 2; echo 3; printf \"%s %s\" abc 123'"
+  echo
   echo "  Shell commands:"
   echo "    $SCRIPT_NAME test-exit 'echo failure && exit 1'"
   echo "    $SCRIPT_NAME test-statement 'if true; then echo 1; fi'"
@@ -358,6 +349,19 @@ help() {
   echo
   echo "    Regardless, you are notified as soon as a command finishes."
   echo "    VERBOSE=true CLI_NOTIFY=true parallely 3 'sleep 2' 2 'sleep 1' 1 'sleep 0.1'"
+  echo
+  echo "  Multiple commands:"
+  echo "    $SCRIPT_NAME fail 'echo failure && exit 1' \\"
+  echo "      fail-printf-nonewline 'printf \"%s %s\"\\ abc 123 ; false' \\"
+  echo "      fail-rsync-src 'rsync -rhP nonexistentdir backup' \\"
+  echo "      delay 'sleep 0.2' \\"
+  echo "      ok-and-output 'echo test ; echo stderr test >&2' \\"
+  echo "      fail-slower-delay '! sleep 0.4' \\"
+  echo "      fail-no-output 'exit 210' \\"
+  echo "      'long name for command with spaces' 'true && echo ok'"
+  echo
+  echo "    The odd numbered arguments are short, filesafe names for each command." 
+  echo "    The names are used in notifications and files storing outout."
   echo
   echo "Contributors: Hugo O. Rivera"
   echo "Version: $VERSION"

@@ -40,6 +40,10 @@ fi
 ############## Exit codes
 # Please skip 88
 LONG_OPTION_WITH_EQUALS_EXIT_CODE=51
+
+# Remember to update this variable!
+EXIT_CODE_MIN="$LONG_OPTION_WITH_EQUALS_EXIT_CODE"
+
 COMPOUND_SHORT_OPTION_EXIT_CODE=52
 MORE_THAN_TWO_OPTION_DASHES_EXIT_CODE=53
 
@@ -53,6 +57,9 @@ MISSING_OPTARG_EXIT_CODE=85
 REPEATED_NAME_EXIT_CODE=86
 NO_ARGUMENTS_EXIT_CODE=89
 CONFIGURABLE_COMMAND_NOT_EXECUTABLE_EXIT_CODE=90
+
+# Remember to update this variable!
+EXIT_CODE_MAX="$CONFIGURABLE_COMMAND_NOT_EXECUTABLE_EXIT_CODE"
 
 COMMANDS_FAILED_EXIT_CODE=2
 
@@ -344,6 +351,12 @@ help() {
   echo "    --debug or set \$DEBUG=true"
   echo "    --trace or set \$TRACE=true:"
   echo "        Run 'set -x'"
+  echo
+  echo "Exit codes:"
+  echo "    Exit code 0 is success."
+  echo "    Exit code $COMMANDS_FAILED_EXIT_CODE indicates some or all commands failed."
+  echo "    Other exit codes range from $EXIT_CODE_MIN to $EXIT_CODE_MAX."
+  echo "    See source code for an enumeration of all possible exit codes."
   echo
   echo "Examples:"
   echo

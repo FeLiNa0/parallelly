@@ -5,7 +5,11 @@ EDIT README.template.md, not README.md directly.
 Use `make build-readme to update the README file
 -->
 
+Add Jet aerobics to your CLI!
+
 ## Usage
+
+See [demos at bottom of document](#demos) for examples with output.
 
 ```
 Description:
@@ -14,6 +18,8 @@ Description:
     - Notify if a command succeeds (status code 0) or fails (non-zero status code).
     - Save command outputs to a temporary directory.
     - Print command output if the command fails.
+    - (Optional) Print command output if the command succeeds.
+    - Print line count of command output.
     - Measures total runtime.
     - Measures runtime of each command.
 
@@ -62,6 +68,7 @@ Configuration:
     --light-mode|--no-light-mode or set $LIGHT_MODE=true: 
     --command-output-command|--cc or set $SHOW_CMD_OUTPUT_CMD:
         Command for printing stderr and stdout of a command
+        If this argument is passed, --cc-args is set to '' by default.
         Default: tail
     --command-output-command-args|--cc-args  or set $SHOW_CMD_OUTPUT_CMD_ARG:
         Arguments for command for printing stderr and stdout of a command
@@ -104,7 +111,7 @@ Configuration:
 
 Exit codes:
     Exit code 0 is success.
-    Exit code 2 indicates some or all commands failed.
+    Exit code 22 indicates some or all commands failed.
     Other exit codes range from 51 to 90.
     See source code for an enumeration of all possible exit codes.
 
@@ -274,4 +281,424 @@ Use shellcheck to check shellscripts.
 
 ```
 make check
+```
+
+## Demos
+
+The parallely commands start with a `$ ` to indicate it is a command typed into the shell.
+The rest of the code is the output of the command.
+
+
+### Demo 1: basic usage
+
+
+Parallely runs multiple commands in parallel and captures their output.
+You pass it pairs of arguments: a name for the command and the command itself.
+
+Failing command output is summarized with `tail -n1` and a list of
+command names that failed is listed at the end.
+By default, successful command output is not shown.
+Timing information is shown for each command and for total runtime.
+
+Some of the commands that were run are indicated by a leading `+ `, such as `+ tail -n1` for showing output and the command itself.
+
+Notice that command output is save in a temporary directory.
+
+```
+$ parallely long-running 'echo OK >&2 && sleep 0.25' \
+    lots-of-output 'cat $(which parallely)' \
+    failing 'echo ERROR ; exit 1'
+parallely will run 3 commands in parallel 
+3 commands finished in 0.30689 seconds
+
+```
+
+### Demo 2: speedup demo
+
+
+Here, we're going to run ten sleep 0.1 commands in parallel and then sequentially to compare the runtime.
+
+```
+$ parallely sleep1 'sleep 0.1' \
+    sleep2 'sleep 0.1' \
+    sleep3 'sleep 0.1' \
+    sleep4 'sleep 0.1' \
+    sleep5 'sleep 0.1' \
+    sleep6 'sleep 0.1' \
+    sleep7 'sleep 0.1' \
+    sleep8 'sleep 0.1' \
+    sleep9 'sleep 0.1' \
+    sleep0 'sleep 0.1'
+parallely will run 10 commands in parallel 
+10 commands finished in 0.33458 seconds
++ echo
+
+$ parallely --sequential sleep1 'sleep 0.1' \
+    sleep2 'sleep 0.1' \
+    sleep3 'sleep 0.1' \
+    sleep4 'sleep 0.1' \
+    sleep5 'sleep 0.1' \
+    sleep6 'sleep 0.1' \
+    sleep7 'sleep 0.1' \
+    sleep8 'sleep 0.1' \
+    sleep9 'sleep 0.1' \
+    sleep0 'sleep 0.1'
+parallely will run 10 commands sequentially 
+FORCE_SEQUENTIAL is set: Waiting for command sleep1 to finish
+FORCE_SEQUENTIAL is set: Waiting for command sleep2 to finish
+FORCE_SEQUENTIAL is set: Waiting for command sleep3 to finish
+FORCE_SEQUENTIAL is set: Waiting for command sleep4 to finish
+FORCE_SEQUENTIAL is set: Waiting for command sleep5 to finish
+FORCE_SEQUENTIAL is set: Waiting for command sleep6 to finish
+FORCE_SEQUENTIAL is set: Waiting for command sleep7 to finish
+FORCE_SEQUENTIAL is set: Waiting for command sleep8 to finish
+FORCE_SEQUENTIAL is set: Waiting for command sleep9 to finish
+FORCE_SEQUENTIAL is set: Waiting for command sleep0 to finish
+10 commands finished in 1.34015 second
+
+```
+
+### Demo 3: show output for all commands
+
+
+Use `-a` to show output for successful commands as well.
+
+```
+$ parallely -a long-running 'echo OK >&2 && sleep 0.25' \
+    lots-of-output 'cat $(which parallely)' \
+    failing 'echo ERROR ; exit 1'
+parallely will run 3 commands in parallel 
+============= Successful command(s) =============
+Command long-running succeeded in 0.260103 seconds.
++ echo OK >&2 && sleep 0.25
+/tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/long-running.stderr
+/tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/long-running.stdout
+STDERR output for successful command long-running: 1 lines
++ tail -n1 /tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/long-running.stderr
+OK
+STDOUT output for successful command long-running: (no output)
+
+Command lots-of-output succeeded in 0.0124626 seconds.
++ cat $(which parallely)
+/tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
+/tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+STDERR output for successful command lots-of-output: (no output)
+STDOUT output for successful command lots-of-output: 912 lines
++ tail -n1 /tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+# End of parallely script
+
+Command failing succeeded in 0.0103636 seconds.
++ echo ERROR ; exit 1
+/tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/failing.stderr
+/tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/failing.stdout
+STDERR output for successful command failing: (no output)
+STDOUT output for successful command failing: 1 lines
++ tail -n1 /tmp/tmp.jyxihnEsaU/parallely-logs-hugo-2021-11-14/failing.stdout
+ERROR
+
+3 commands finished in 0.354863 seconds
+
+```
+
+### Demo 4: verbose mode for even more output
+
+
+Use `-V` to show more detailed output.
+It is helpful to use it in conjunction with `-a`.
+
+Notice that the files where output is being saved are printed as soon as the command is started.
+You can use `tail -f <OUTPUT FILE>` to see the output of a long-lived command.
+
+Look for "Starting " and "See output at:" near the top of the logs
+
+```
+$ parallely -V -a long-running 'echo OK >&2 && sleep 0.25' \
+    lots-of-output 'cat $(which parallely)' \
+    failing 'echo ERROR ; exit 1'
+============= Configuration =============
+Environment variables may have been overridden by command line options.
+
+PARALLELY_VERBOSE_OUTPUT=true
+PARALLELY_SHOW_ALL_OUTPUT=true
+PARALLELY_EMOJI_OUTPUT=false
+CMD_SHELL=sh
+CMD_SHELL_ARGS=-c
+FORCE_SEQUENTIAL=false
+SHOW_CMD_OUTPUT_CMD=tail
+SHOW_CMD_OUTPUT_CMD_ARGS=-n1
+NOTIFY_COMMAND=notify-send
+FAILURE_NOTIFY_COMMAND=notify-send
+NOTIFY_COMMAND_ARGS=
+FAILURE_NOTIFY_COMMAND_ARGS=--urgency=critical
+ENABLE_COLORS=false
+LIGHT_MODE=false
+Temporary directory CMD_OUT_DIR=/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14
+
+parallely will run 3 commands in parallel 
+============= Starting commands =============
+Starting long-running command 1/3
++ sh -c echo OK >&2 && sleep 0.25
+See output at:
+/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/long-running.stderr
+/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/long-running.stdout
+Starting lots-of-output command 2/3
++ sh -c cat $(which parallely)
+See output at:
+/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
+/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+Starting failing command 3/3
++ sh -c echo ERROR ; exit 1
+See output at:
+/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/failing.stderr
+/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/failing.stdout
+
+============= Waiting for commands to finish =============
+Will list successful and failed commands.
+
+============= Successful command(s) =============
+Command long-running succeeded in 0.260984 seconds.
++ echo OK >&2 && sleep 0.25
+/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/long-running.stderr
+/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/long-running.stdout
+STDERR output for successful command long-running: 1 lines
++ tail -n1 /tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/long-running.stderr
+OK
+STDOUT output for successful command long-running: (no output)
+
+Command lots-of-output succeeded in 0.0122392 seconds.
++ cat $(which parallely)
+/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
+/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+STDERR output for successful command lots-of-output: (no output)
+STDOUT output for successful command lots-of-output: 912 lines
++ tail -n1 /tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+# End of parallely script
+
+Command failing succeeded in 0.0108409 seconds.
++ echo ERROR ; exit 1
+/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/failing.stderr
+/tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/failing.stdout
+STDERR output for successful command failing: (no output)
+STDOUT output for successful command failing: 1 lines
++ tail -n1 /tmp/tmp.IWjMUELoSk/parallely-logs-hugo-2021-11-14/failing.stdout
+ERROR
+
+============= SUMMARY =============
+3 commands succeeded
+3 commands finished in 0.360159 seconds
+
+```
+
+### Demo 5: more output or all output
+
+
+To show more output, or all output use the `--command-output-command or --c`
+and `--command-output-command-args or --cc-args` arguments.
+You can use `cat` to show all output or `tail -n10` to show the last 10 lines.
+
+By default, only the last line of output is shown.
+
+```
+$ parallely -a onlylastline 'printf "a\nb\nc\nd\ne"'
+parallely will run 1 commands in parallel 
+============= Successful command(s) =============
+Command onlylastline succeeded in 0.00998235 seconds.
++ printf "a\nb\nc\nd\ne"
+/tmp/tmp.KEM66irE3G/parallely-logs-hugo-2021-11-14/onlylastline.stderr
+/tmp/tmp.KEM66irE3G/parallely-logs-hugo-2021-11-14/onlylastline.stdout
+STDERR output for successful command onlylastline: (no output)
+STDOUT output for successful command onlylastline: 4 lines
++ tail -n1 /tmp/tmp.KEM66irE3G/parallely-logs-hugo-2021-11-14/onlylastline.stdout
+e
+(no newline at end of output)
+
+1 command finished in 0.0717688 seconds
++ echo
+
+$ parallely --cc-args -n3 -a last3lines 'printf "a\nb\nc\nd\ne"'
+parallely will run 1 commands in parallel 
+============= Successful command(s) =============
+Command last3lines succeeded in 0.0113878 seconds.
++ printf "a\nb\nc\nd\ne"
+/tmp/tmp.xp2LLipPHY/parallely-logs-hugo-2021-11-14/last3lines.stderr
+/tmp/tmp.xp2LLipPHY/parallely-logs-hugo-2021-11-14/last3lines.stdout
+STDERR output for successful command last3lines: (no output)
+STDOUT output for successful command last3lines: 4 lines
++ tail -n3 /tmp/tmp.xp2LLipPHY/parallely-logs-hugo-2021-11-14/last3lines.stdout
+c
+d
+e
+(no newline at end of output)
+
+1 command finished in 0.0766208 seconds
++ echo
+
+$ parallely --cc cat -a last3lines 'printf "a\nb\nc\nd\ne"'
+parallely will run 1 commands in parallel 
+============= Successful command(s) =============
+Command last3lines succeeded in 0.00837231 seconds.
++ printf "a\nb\nc\nd\ne"
+/tmp/tmp.CSCU9bjNOQ/parallely-logs-hugo-2021-11-14/last3lines.stderr
+/tmp/tmp.CSCU9bjNOQ/parallely-logs-hugo-2021-11-14/last3lines.stdout
+STDERR output for successful command last3lines: (no output)
+STDOUT output for successful command last3lines: 4 lines
++ cat  /tmp/tmp.CSCU9bjNOQ/parallely-logs-hugo-2021-11-14/last3lines.stdout
+a
+b
+c
+d
+e
+(no newline at end of output)
+
+1 command finished in 0.0633631 seconds
+
+```
+
+### Demo 6: no emoji and no colors
+
+
+Parallely prints emoji and colors when it seems they could be supported.
+To turn them off, use `--no-color` and `--no-emoji`.
+
+```
+$ parallely --no-color --no-emoji -a long-running 'echo OK >&2 && sleep 0.25' \
+    lots-of-output 'cat $(which parallely)' \
+    failing 'echo ERROR ; exit 1'
+parallely will run 3 commands in parallel 
+============= Successful command(s) =============
+Command long-running succeeded in 0.261268 seconds.
++ echo OK >&2 && sleep 0.25
+/tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/long-running.stderr
+/tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/long-running.stdout
+STDERR output for successful command long-running: 1 lines
++ tail -n1 /tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/long-running.stderr
+OK
+STDOUT output for successful command long-running: (no output)
+
+Command lots-of-output succeeded in 0.0248678 seconds.
++ cat $(which parallely)
+/tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
+/tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+STDERR output for successful command lots-of-output: (no output)
+STDOUT output for successful command lots-of-output: 912 lines
++ tail -n1 /tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+# End of parallely script
+
+Command failing succeeded in 0.0137508 seconds.
++ echo ERROR ; exit 1
+/tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/failing.stderr
+/tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/failing.stdout
+STDERR output for successful command failing: (no output)
+STDOUT output for successful command failing: 1 lines
++ tail -n1 /tmp/tmp.33QTzmFC84/parallely-logs-hugo-2021-11-14/failing.stdout
+ERROR
+
+3 commands finished in 0.380262 seconds
+
+```
+
+### Demo 7: sequential mode
+
+
+Parallely supports `--sequential or -s` to run commands sequentially instead of in parallel.
+This is useful for testing and comparison purposes.
+Also, you can use this mode to just capture output and notify on completion.
+
+```
+$ parallely --sequential -a long-running 'echo OK >&2 && sleep 0.25' \
+    lots-of-output 'cat $(which parallely)' \
+    failing 'echo ERROR ; exit 1'
+parallely will run 3 commands sequentially 
+FORCE_SEQUENTIAL is set: Waiting for command long-running to finish
+FORCE_SEQUENTIAL is set: Waiting for command lots-of-output to finish
+FORCE_SEQUENTIAL is set: Waiting for command failing to finish
+============= Successful command(s) =============
+Command long-running succeeded in 0.260458 seconds.
++ echo OK >&2 && sleep 0.25
+/tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/long-running.stderr
+/tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/long-running.stdout
+STDERR output for successful command long-running: 1 lines
++ tail -n1 /tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/long-running.stderr
+OK
+STDOUT output for successful command long-running: (no output)
+
+Command lots-of-output succeeded in 0.0124722 seconds.
++ cat $(which parallely)
+/tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
+/tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+STDERR output for successful command lots-of-output: (no output)
+STDOUT output for successful command lots-of-output: 912 lines
++ tail -n1 /tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
+# End of parallely script
+
+Command failing succeeded in 0.012435 seconds.
++ echo ERROR ; exit 1
+/tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/failing.stderr
+/tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/failing.stdout
+STDERR output for successful command failing: (no output)
+STDOUT output for successful command failing: 1 lines
++ tail -n1 /tmp/tmp.BAiWk0JjYn/parallely-logs-hugo-2021-11-14/failing.stdout
+ERROR
+
+3 commands finished in 0.442281 seconds
+
+```
+
+### Demo 8: misc arguments
+
+
+You can show the configuration, the version, or debug information easily.
+
+```
+$ parallely --show-configuration
+============= Configuration =============
+Environment variables may have been overridden by command line options.
+
+PARALLELY_VERBOSE_OUTPUT=false
+PARALLELY_SHOW_ALL_OUTPUT=false
+PARALLELY_EMOJI_OUTPUT=false
+CMD_SHELL=sh
+CMD_SHELL_ARGS=-c
+FORCE_SEQUENTIAL=false
+SHOW_CMD_OUTPUT_CMD=tail
+SHOW_CMD_OUTPUT_CMD_ARGS=-n1
+NOTIFY_COMMAND=notify-send
+FAILURE_NOTIFY_COMMAND=notify-send
+NOTIFY_COMMAND_ARGS=
+FAILURE_NOTIFY_COMMAND_ARGS=--urgency=critical
+ENABLE_COLORS=false
+LIGHT_MODE=false
+Temporary directory CMD_OUT_DIR=/tmp/tmp.25buE0RAR2/parallely-logs-hugo-2021-11-14
+
+$ parallely --no-emoji --light-mode --shell-command zsh --cc-args -n10 --show-configuration
+============= Configuration =============
+Environment variables may have been overridden by command line options.
+
+PARALLELY_VERBOSE_OUTPUT=false
+PARALLELY_SHOW_ALL_OUTPUT=false
+PARALLELY_EMOJI_OUTPUT=false
+CMD_SHELL=zsh
+CMD_SHELL_ARGS=-c
+FORCE_SEQUENTIAL=false
+SHOW_CMD_OUTPUT_CMD=tail
+SHOW_CMD_OUTPUT_CMD_ARGS=-n10
+NOTIFY_COMMAND=notify-send
+FAILURE_NOTIFY_COMMAND=notify-send
+NOTIFY_COMMAND_ARGS=
+FAILURE_NOTIFY_COMMAND_ARGS=--urgency=critical
+ENABLE_COLORS=false
+LIGHT_MODE=true
+Temporary directory CMD_OUT_DIR=/tmp/tmp.msPHm7Ij6h/parallely-logs-hugo-2021-11-14
+
+$ parallely --version
+1.8.1
+$ parallely --debug
+DEBUG: arglog: Remaining (0)
+DEBUG: PPID=1102950
+DEBUG: Parent process name: bash
+DEBUG: Is a TTY: false
+DEBUG: Colors supported: 256
++ echo '$ parallely --trace  # Very noisy!'
+$ parallely --trace  # Very noisy!
+
 ```

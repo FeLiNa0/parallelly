@@ -908,3 +908,5 @@ if [ "$FAILURE" = true ]; then
   error "$FAILURES/$NUM_CMDS $(noun "$FAILURES" command) failed: $FAILED_CMDS"
   exit "$COMMANDS_FAILED_EXIT_CODE"
 fi
+
+# End of parallely script

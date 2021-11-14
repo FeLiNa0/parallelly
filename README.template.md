@@ -7,6 +7,8 @@ Use `make build-readme to update the README file
 
 ## Usage
 
+See [demos at bottom of document](#demos) for examples with output.
+
 ```
 <HELP_STRING>
 ```
@@ -122,3 +124,10 @@ Use shellcheck to check shellscripts.
 ```
 make check
 ```
+
+## Demos
+
+The parallely commands start with a `$ ` to indicate it is a command typed into the shell.
+The rest of the code is the output of the command.
+
+<DEMO_OUTPUT>

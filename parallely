@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 
 # TODO mark each global variable
 # TODO are there local variables in POSIX shellscripts?
@@ -19,6 +19,7 @@ fi
 ############## Constants
 SCRIPT_NAME="parallely"
 VERSION=1.8.0
+NO_CMD_SHELL_INDICATOR=RAW
 # For some reason, plain "\n" doesn't work with test
 NEWLINE="$(printf "\n")"
 
@@ -173,7 +174,7 @@ verbose() {
 
 debug() {
   if [ "${DEBUG-}" = true ]; then
-    echo "$@"
+    echo DEBUG: "$@"
   fi
 }
 
@@ -283,7 +284,7 @@ help() {
   echo "        Default: false"
   echo "    --shell-command or set \$CMD_SHELL:"
   echo "        Which shell to run the commands in."
-  echo "        Special value: RAW."
+  echo "        Special value: $NO_CMD_SHELL_INDICATOR."
   echo "          Run the commands directly, without using a shell."
   echo "          Use only if you know what you're doing."
   echo "        Default: $DEFAULT_CMD_SHELL"
@@ -373,13 +374,18 @@ run_cmd() {
   TIME_FILE="$CMD_OUT_DIR/$NAME.time"
 
   verbose "Starting $NAME command $CURRENT_CMD/$NUM_CMDS"
-  verbose + "$CMD_SHELL" "$CMD_SHELL_ARGS" "$COMMAND"
+  if [ "$CMD_SHELL" = $NO_CMD_SHELL_INDICATOR ]; then
+    verbose "Running without a shell"
+    verbose + "$COMMAND"
+  else
+    verbose + "$CMD_SHELL" "$CMD_SHELL_ARGS" "$COMMAND"
+  fi
 
   __run_cmd() {
     NAME="$1"
     COMMAND="$2"
 
-    if [ "$CMD_SHELL" = RAW ]; then
+    if [ "$CMD_SHELL" = $NO_CMD_SHELL_INDICATOR ]; then
       $COMMAND
     else
       $CMD_SHELL $CMD_SHELL_ARGS "$COMMAND"
@@ -420,6 +426,11 @@ run_cmd() {
     wait "$PID" || true
   fi
 }
+
+############## main()
+
+debug "PPID=$PPID"
+debug "Parent process name: $(ps -p $PPID -o comm=)"
 
 ############## Parse arguments
 
@@ -592,6 +603,9 @@ done
 
 ############## Validate arguments and set variables that depend on arguments
 
+debug "PPID=$PPID"
+debug "Parent process name: $(ps -p $PPID -o comm=)"
+
 if [ "$TRACE" = true ]; then
   set -x
 fi
@@ -615,7 +629,7 @@ check_is_exec() {
 check_is_exec SHOW_CMD_OUTPUT_CMD "$SHOW_CMD_OUTPUT_CMD"
 check_is_exec NOTIFY_COMMAND "$NOTIFY_COMMAND"
 check_is_exec FAILURE_NOTIFY_COMMAND "$FAILURE_NOTIFY_COMMAND"
-if ! [ "$CMD_SHELL" = RAW ]; then
+if ! [ "$CMD_SHELL" = $NO_CMD_SHELL_INDICATOR ]; then
   check_is_exec CMD_SHELL "$CMD_SHELL"
 fi
 

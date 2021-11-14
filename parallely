@@ -934,7 +934,7 @@ TOTAL_TIME="$(subtract_two_floats "$(time_in_sec)" "$START_TIME")"
 ############## Print summary and timing
 verbose_section SUMMARY
 verbose "$SUCCESS $(noun "$SUCCESS" command) succeeded"
-log "$NUM_CMDS $(noun "$NUM_CMDS" command) finished in $TOTAL_TIME $(noun "$TOTAL_TIME" second)"
+log "$NUM_CMDS $(noun "$NUM_CMDS" command) finished in $TOTAL_TIME $(noun "$TOTAL_TIME" second)."
 if [ "$FAILURE" = true ]; then
   error "$FAILURES/$NUM_CMDS $(noun "$FAILURES" command) failed: $FAILED_CMDS"
   exit "$COMMANDS_FAILED_EXIT_CODE"

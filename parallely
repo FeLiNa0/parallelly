@@ -27,6 +27,8 @@ show_debug_info() {
 SCRIPT_NAME="parallely"
 VERSION=1.8.1
 NO_CMD_SHELL_INDICATOR=RAW
+SUCCESSFUL_MARKER="____PARALLELY_SUCCESSFUL____"
+FAILED_MARKER="____PARALLELY_FAILED____"
 # For some reason, plain "\n" doesn't work with test
 NEWLINE="$(printf "\n")"
 
@@ -473,16 +475,22 @@ run_cmd() {
 
   # Run command and then run notify command.
   # If either notify command fails, do not count the command as a failed command
-  __run_time_notify_capture_cmd "$NAME" "$COMMAND" &
-  PID="$!"
+
+  if ! [ "$FORCE_SEQUENTIAL" = true ]; then
+    __run_time_notify_capture_cmd "$NAME" "$COMMAND" &
+    PID="$!"
+  else
+    log "FORCE_SEQUENTIAL is set: Waiting for command $NAME to finish"
+    if __run_time_notify_capture_cmd "$NAME" "$COMMAND"; then
+      PID="$SUCCESSFUL_MARKER$CURRENT_CMD"
+    else
+      PID="$FAILED_MARKER$CURRENT_CMD"
+    fi
+  fi
+
   pids="$pids $PID"
   PID_FILE="$CMD_OUT_DIR/$PID"
   echo "$NAME" > "$PID_FILE"
-
-  if [ "$FORCE_SEQUENTIAL" = true ]; then
-    log "FORCE_SEQUENTIAL is set: Waiting for command $NAME to finish"
-    wait "$PID" || true
-  fi
 }
 
 ############## main()
@@ -829,7 +837,17 @@ if [ "$PARALLELY_VERBOSE_OUTPUT" != true ] && [ "$PARALLELY_SHOW_ALL_OUTPUT" = t
 fi
 
 for PID in $(echo $pids); do
-  if wait "$PID"; then
+  case "$PID" in
+    "$SUCCESSFUL_MARKER"*) COMMAND_WAS_SUCCESSFUL=true ;;
+    "$FAILED_MARKER"*) COMMAND_WAS_SUCCESSFUL=true ;;
+    *) if wait "$PID"; then 
+        COMMAND_WAS_SUCCESSFUL=true
+      else
+        COMMAND_WAS_SUCCESSFUL=true
+      fi
+      ;;
+  esac
+  if [ "$COMMAND_WAS_SUCCESSFUL" = true ]; then
     SUCCESS="$((SUCCESS + 1))"
     if [ "$SUCCESS" = 1 ]; then
       verbose_section "Successful command(s)"

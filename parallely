@@ -493,9 +493,9 @@ run_cmd() {
     ( echo "$(time_in_sec)" "$LOCAL_START_TIME" | awk '{print $1 - $2}' || echo "UNKNOWN" ) > "$TIME_FILE"
 
     if [ "$STATUS_CODE" = 0 ]; then
-      $NOTIFY_COMMAND $NOTIFY_COMMAND_ARGS "parallely: $NAME command finished" "$COMMAND" || true
+      $NOTIFY_COMMAND $NOTIFY_COMMAND_ARGS "parallely notification: $NAME command finished" "$COMMAND" || true
     else
-      $FAILURE_NOTIFY_COMMAND $FAILURE_NOTIFY_COMMAND_ARGS "parallely: $NAME command failed" "$COMMAND"
+      $FAILURE_NOTIFY_COMMAND $FAILURE_NOTIFY_COMMAND_ARGS "parallely notification: ERROR $NAME command failed" "$COMMAND"
     fi
     return "$STATUS_CODE"
   }

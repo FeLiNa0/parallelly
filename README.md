@@ -314,7 +314,7 @@ $ parallely long-running 'echo OK >&2 && sleep 0.25' \
     failing 'echo ERROR ; exit 1'
 parallely will run 3 commands in parallel 
 ============= Failed command output =============
-ERROR Failure in command failing after 0.0142817 seconds
+ERROR Failure in command failing after 0.00824976 seconds
 + echo ERROR ; exit 1
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/failing.stderr
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/failing.stdout
@@ -322,7 +322,7 @@ STDERR output for failed command failing: (no output)
 STDOUT output for failed command failing: 1 lines
 + tail -n1 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/failing.stdout
 ERROR
-3 commands finished in 0.334027 seconds
+3 commands finished in 0.308873 seconds
 ERROR 1/3 command failed: failing 
 
 ```
@@ -344,7 +344,7 @@ $ parallely sleep1 'sleep 0.1' \
     sleep9 'sleep 0.1' \
     sleep0 'sleep 0.1'
 parallely will run 10 commands in parallel 
-10 commands finished in 0.285599 seconds
+10 commands finished in 0.256042 seconds
 + echo
 
 $ parallely --sequential sleep1 'sleep 0.1' \
@@ -368,7 +368,7 @@ FORCE_SEQUENTIAL is set: Waiting for command sleep7 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep8 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep9 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep0 to finish
-10 commands finished in 1.33342 second
+10 commands finished in 1.24497 second
 
 ```
 
@@ -383,7 +383,7 @@ $ parallely -a long-running 'echo OK >&2 && sleep 0.25' \
     failing 'echo ERROR ; exit 1'
 parallely will run 3 commands in parallel 
 ============= Successful command(s) =============
-Command long-running succeeded in 0.257857 seconds.
+Command long-running succeeded in 0.256703 seconds.
 + echo OK >&2 && sleep 0.25
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/long-running.stderr
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/long-running.stdout
@@ -392,7 +392,7 @@ STDERR output for successful command long-running: 1 lines
 OK
 STDOUT output for successful command long-running: (no output)
 
-Command lots-of-output succeeded in 0.0129354 seconds.
+Command lots-of-output succeeded in 0.00944519 seconds.
 + cat $(which parallely)
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
@@ -402,7 +402,7 @@ STDOUT output for successful command lots-of-output: 943 lines
 # End of parallely script
 
 ============= Failed command output =============
-ERROR Failure in command failing after 0.00816011 seconds
+ERROR Failure in command failing after 0.00578189 seconds
 + echo ERROR ; exit 1
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/failing.stderr
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/failing.stdout
@@ -410,7 +410,7 @@ STDERR output for failed command failing: (no output)
 STDOUT output for failed command failing: 1 lines
 + tail -n1 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/failing.stdout
 ERROR
-3 commands finished in 0.354366 seconds
+3 commands finished in 0.329041 seconds
 ERROR 1/3 command failed: failing 
 
 ```
@@ -472,7 +472,7 @@ See output at:
 Will list successful and failed commands.
 
 ============= Successful command(s) =============
-Command long-running succeeded in 0.25972 seconds.
+Command long-running succeeded in 0.258309 seconds.
 + echo OK >&2 && sleep 0.25
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/long-running.stderr
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/long-running.stdout
@@ -481,7 +481,7 @@ STDERR output for successful command long-running: 1 lines
 OK
 STDOUT output for successful command long-running: (no output)
 
-Command lots-of-output succeeded in 0.0212235 seconds.
+Command lots-of-output succeeded in 0.00931668 seconds.
 + cat $(which parallely)
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
@@ -491,7 +491,7 @@ STDOUT output for successful command lots-of-output: 943 lines
 # End of parallely script
 
 ============= Failed command output =============
-ERROR Failure in command failing after 0.00926638 seconds
+ERROR Failure in command failing after 0.00635719 seconds
 + echo ERROR ; exit 1
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/failing.stderr
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/failing.stdout
@@ -502,7 +502,7 @@ ERROR
 
 ============= SUMMARY =============
 2 commands succeeded
-3 commands finished in 0.357899 seconds
+3 commands finished in 0.332122 seconds
 ERROR 1/3 command failed: failing 
 
 ```
@@ -520,7 +520,7 @@ By default, only the last line of output is shown.
 $ parallely -a onlylastline 'printf "a\nb\nc\nd\ne"'
 parallely will run 1 commands in parallel 
 ============= Successful command(s) =============
-Command onlylastline succeeded in 0.00829744 seconds.
+Command onlylastline succeeded in 0.00517321 seconds.
 + printf "a\nb\nc\nd\ne"
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/onlylastline.stderr
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/onlylastline.stdout
@@ -530,13 +530,13 @@ STDOUT output for successful command onlylastline: 4 lines
 e
 (no newline at end of output)
 
-1 command finished in 0.0642128 seconds
+1 command finished in 0.037853 seconds
 + echo
 
 $ parallely --cc-args -n3 -a last3lines 'printf "a\nb\nc\nd\ne"'
 parallely will run 1 commands in parallel 
 ============= Successful command(s) =============
-Command last3lines succeeded in 0.00935149 seconds.
+Command last3lines succeeded in 0.0050869 seconds.
 + printf "a\nb\nc\nd\ne"
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/last3lines.stderr
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/last3lines.stdout
@@ -548,13 +548,13 @@ d
 e
 (no newline at end of output)
 
-1 command finished in 0.056905 seconds
+1 command finished in 0.0424521 seconds
 + echo
 
 $ parallely --cc cat -a last3lines 'printf "a\nb\nc\nd\ne"'
 parallely will run 1 commands in parallel 
 ============= Successful command(s) =============
-Command last3lines succeeded in 0.00682664 seconds.
+Command last3lines succeeded in 0.00570631 seconds.
 + printf "a\nb\nc\nd\ne"
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/last3lines.stderr
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/last3lines.stdout
@@ -568,7 +568,7 @@ d
 e
 (no newline at end of output)
 
-1 command finished in 0.0576043 seconds
+1 command finished in 0.0442486 seconds
 
 ```
 
@@ -584,7 +584,7 @@ $ parallely --no-color --no-emoji -a long-running 'echo OK >&2 && sleep 0.25' \
     failing 'echo ERROR ; exit 1'
 parallely will run 3 commands in parallel 
 ============= Successful command(s) =============
-Command long-running succeeded in 0.261273 seconds.
+Command long-running succeeded in 0.257999 seconds.
 + echo OK >&2 && sleep 0.25
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/long-running.stderr
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/long-running.stdout
@@ -593,7 +593,7 @@ STDERR output for successful command long-running: 1 lines
 OK
 STDOUT output for successful command long-running: (no output)
 
-Command lots-of-output succeeded in 0.0112853 seconds.
+Command lots-of-output succeeded in 0.00912547 seconds.
 + cat $(which parallely)
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
@@ -603,7 +603,7 @@ STDOUT output for successful command lots-of-output: 943 lines
 # End of parallely script
 
 ============= Failed command output =============
-ERROR Failure in command failing after 0.0132616 seconds
+ERROR Failure in command failing after 0.00802565 seconds
 + echo ERROR ; exit 1
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/failing.stderr
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/failing.stdout
@@ -611,7 +611,7 @@ STDERR output for failed command failing: (no output)
 STDOUT output for failed command failing: 1 lines
 + tail -n1 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/failing.stdout
 ERROR
-3 commands finished in 0.36732 seconds
+3 commands finished in 0.333374 seconds
 ERROR 1/3 command failed: failing 
 
 ```
@@ -632,7 +632,7 @@ FORCE_SEQUENTIAL is set: Waiting for command long-running to finish
 FORCE_SEQUENTIAL is set: Waiting for command lots-of-output to finish
 FORCE_SEQUENTIAL is set: Waiting for command failing to finish
 ============= Successful command(s) =============
-Command long-running succeeded in 0.257894 seconds.
+Command long-running succeeded in 0.257621 seconds.
 + echo OK >&2 && sleep 0.25
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/long-running.stderr
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/long-running.stdout
@@ -641,7 +641,7 @@ STDERR output for successful command long-running: 1 lines
 OK
 STDOUT output for successful command long-running: (no output)
 
-Command lots-of-output succeeded in 0.0115473 seconds.
+Command lots-of-output succeeded in 0.00704312 seconds.
 + cat $(which parallely)
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/lots-of-output.stderr
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
@@ -650,7 +650,7 @@ STDOUT output for successful command lots-of-output: 943 lines
 + tail -n1 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/lots-of-output.stdout
 # End of parallely script
 
-Command failing succeeded in 0.00810003 seconds.
+Command failing succeeded in 0.00645423 seconds.
 + echo ERROR ; exit 1
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/failing.stderr
 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/failing.stdout
@@ -659,7 +659,7 @@ STDOUT output for successful command failing: 1 lines
 + tail -n1 /tmp/demo-tmp-dir/parallely-logs-hugo-2021-11-14/failing.stdout
 ERROR
 
-3 commands finished in 0.419773 seconds
+3 commands finished in 0.36475 seconds
 
 ```
 
@@ -669,6 +669,7 @@ ERROR
 You can show the configuration, the version, or debug information easily.
 
 ```
+$ parallely --trace  # Very noisy!
 $ parallely --show-configuration
 ============= Configuration =============
 Environment variables may have been overridden by command line options.
@@ -715,11 +716,9 @@ $ parallely --version
 1.8.1
 $ parallely --debug
 DEBUG: arglog: Remaining (0)
-DEBUG: PPID=1164534
+DEBUG: PPID=1168976
 DEBUG: Parent process name: bash
 DEBUG: Is a TTY: false
 DEBUG: Colors supported: 256
-+ echo '$ parallely --trace  # Very noisy!'
-$ parallely --trace  # Very noisy!
 
 ```

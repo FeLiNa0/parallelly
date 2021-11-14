@@ -472,7 +472,7 @@ parse_option() {
     --failure-notify-command-args) validate_option_argument "$ARGUMENT" ; FAILURE_NOTIFY_COMMAND_ARGS="$ARGUMENT" ;;
     --show-configuration) SHOW_CONFIGURATION=true ;;
     --debug) DEBUG=true ;;
-    --trace) set -x ;;
+    --trace) TRACE=true ;;
     --*=*)
       error "Long options with argument set with = are not allowed: given $OPTION"
       log "Use --option argument instead of --option=argument"
@@ -594,6 +594,9 @@ done
 
 ############## Validate arguments and set variables that depend on arguments
 
+if [ "$TRACE" = true ]; then
+  set -x
+fi
 
 if ! [ -f "$NAMES_FILE" ]; then
   error Expected one or more name+command pairs as arguments.

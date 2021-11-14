@@ -422,7 +422,7 @@ help() {
   echo "    The odd numbered arguments are short, filesafe names for each command." 
   echo "    The names are used in notifications and files storing outout."
   echo
-  echo "Add Jet aerobics to your CLI!"
+  echo "Add synchronized swimming to your CLI!"
   echo "Version: $VERSION"
 }
 

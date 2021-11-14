@@ -5,7 +5,7 @@ EDIT README.template.md, not README.md directly.
 Use `make build-readme to update the README file
 -->
 
-Add Jet aerobics to your CLI!
+Add synchronized swimming to your CLI!
 
 ## Usage
 
@@ -170,7 +170,7 @@ Examples:
     The odd numbered arguments are short, filesafe names for each command.
     The names are used in notifications and files storing outout.
 
-Add Jet aerobics to your CLI!
+Add synchronized swimming to your CLI!
 Version: 1.8.3
 
 ```

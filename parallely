@@ -463,7 +463,6 @@ run_cmd() {
     set +eu
     ( __run_cmd "$NAME" "$COMMAND" > "$STDOUT_FILE" 2> "$STDERR_FILE" )
     STATUS_CODE="$?"
-    echo STATUS IS "$STATUS_CODE"
     echo "$(time_in_sec)" "$LOCAL_START_TIME" | awk '{print $1 - $2}' > "$TIME_FILE"
 
     if [ "$STATUS_CODE" = 0 ]; then

@@ -128,6 +128,9 @@ fi
 
 PARALLELY_TMP_DIR="${PARALLELY_TMP_DIR-$(mktemp --directory)}"
 
+SHOW_LINE_COUNT="${SHOW_LINE_COUNT-true}"
+SHOW_BYTE_COUNT="${SHOW_BYTE_COUNT-true}"
+
 # If $DISPLAY is not set
 # use CLI to notify about commands finishing
 if [ -z "${DISPLAY-}" ]; then
@@ -343,13 +346,19 @@ help() {
   echo "        Command for printing stderr and stdout of a command"
   echo "        If this argument is passed, --cc-args is set to '' by default."
   echo "        Default: $SHOW_CMD_OUTPUT_CMD_DEFAULT"
-  echo "    --command-output-command-args|--cc-args  or set \$SHOW_CMD_OUTPUT_CMD_ARGS:"
+  echo "    --command-output-command-args|--cc-args or set \$SHOW_CMD_OUTPUT_CMD_ARGS:"
   echo "        Arguments for command for printing stderr and stdout of a command"
   echo "        Default: $SHOW_CMD_OUTPUT_CMD_ARGS_DEFAULT"
-  echo "    --tmp-dir  or set \$PARALLELY_TMP_DIR:"
+  echo "    --tmp-dir or set \$PARALLELY_TMP_DIR:"
   echo "        If you don't have \`mktemp\` on your system, you must set this"
   echo "        option with the environment variable!"
   echo "        Default: created using \'mktemp\'"
+  echo "    --line-count|--no-line-count or set \$SHOW_LINE_COUNT:"
+  echo "        Whether to show line count."
+  echo "        Default: true"
+  echo "    --byte-count|--no-byte-count or set \$SHOW_BYTE_COUNT:"
+  echo "        Whether to show byte count."
+  echo "        Default: true"
   echo "  Running commands configuration:"
   echo "    --sequential|-s|--no-sequential or set \$FORCE_SEQUENTIAL=true:"
   echo "        Run commands sequentially instead of in parallel."
@@ -587,6 +596,10 @@ parse_option() {
     --command-output-command | --cc) validate_option_argument "$ARGUMENT" ; SHOW_CMD_OUTPUT_CMD_ARGS='' ; SHOW_CMD_OUTPUT_CMD="$ARGUMENT" ;;
     --command-output-command-args | --cc-args) PARSED_ARGUMENT=true ; SHOW_CMD_OUTPUT_CMD_ARGS="$ARGUMENT" ;;
     --tmp-dir) PARSED_ARGUMENT=true ; PARALLELY_TMP_DIR="$ARGUMENT" ;;
+    --line-count) SHOW_LINE_COUNT=true ;;
+    --no-line-count) SHOW_LINE_COUNT=false ;;
+    --byte-count) SHOW_BYTE_COUNT=true ;;
+    --no-byte-count) SHOW_BYTE_COUNT=false ;;
     --sequential | -s) FORCE_SEQUENTIAL=true ;;
     --no-sequential) FORCE_SEQUENTIAL=false ;;
     --shell-command) validate_option_argument "$ARGUMENT" ; CMD_SHELL="$ARGUMENT" ;;
@@ -793,6 +806,8 @@ show_configuration() {
   log "SHOW_CMD_OUTPUT_CMD=$SHOW_CMD_OUTPUT_CMD"
   log "SHOW_CMD_OUTPUT_CMD_ARGS=$SHOW_CMD_OUTPUT_CMD_ARGS"
   log "PARALLELY_TMP_DIR=$PARALLELY_TMP_DIR"
+  log "SHOW_LINE_COUNT=$SHOW_LINE_COUNT"
+  log "SHOW_BYTE_COUNT=$SHOW_BYTE_COUNT"
   log "NOTIFY_COMMAND=$NOTIFY_COMMAND"
   log "FAILURE_NOTIFY_COMMAND=$FAILURE_NOTIFY_COMMAND"
   log "NOTIFY_COMMAND_ARGS=$NOTIFY_COMMAND_ARGS"
@@ -848,18 +863,28 @@ verbose
 
 ############## Wait for commands and show results, especially from failed commands
 line_count() {
+  if ! [ "$SHOW_LINE_COUNT" = true ]; then
+    printf ""
+    return 0
+  fi
   if ! [ -f "$1" ] && command -v wc > /dev/null; then
-    echo "UNKNOWN"
+    echo "UNKNOWN line count"
   else
-    cat "$1" 2>/dev/null | wc -l || echo 0
+    __LINE_COUNT="$(cat "$1" 2>/dev/null | wc -l || echo 0)"
+    echo "$__LINE_COUNT $(noun "$__LINE_COUNT" line)"
   fi
 }
 
 byte_count() {
+  if ! [ "$SHOW_BYTE_COUNT" = true ]; then
+    printf ""
+    return 0
+  fi
   if ! [ -f "$1" ] && command -v wc > /dev/null; then
-    echo "UNKNOWN"
+    echo "UNKNOWN byte count"
   else
-    cat "$1" 2>/dev/null | wc -c || echo 0
+    __BYTE_COUNT="$(cat "$1" 2>/dev/null | wc -c || echo 0)"
+    echo "$__BYTE_COUNT $(noun "$__BYTE_COUNT" byte)"
   fi
 }
 
@@ -875,7 +900,7 @@ show_output() {
   if [ -z "$(cat "$FILE")" ]; then
     log_color "$UNDEREMPH" " $NO_OUTPUT_INDICATOR"
   else
-    log " $BYTE_COUNT bytes $LINE_COUNT lines"
+    log " $BYTE_COUNT $LINE_COUNT"
     log + "$SHOW_CMD_OUTPUT_CMD $SHOW_CMD_OUTPUT_CMD_ARGS $FILE"
     $SHOW_CMD_OUTPUT_CMD $SHOW_CMD_OUTPUT_CMD_ARGS "$FILE"
     if [ "$(tail -c1 "$FILE")" != "$NEWLINE" ]; then

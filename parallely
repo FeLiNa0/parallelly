@@ -78,6 +78,8 @@ if ! [ -t 1 ]; then
 fi
 ENABLE_COLORS="${ENABLE_COLORS-true}"
 
+LIGHT_MODE="${LIGHT_MODE-false}"
+
 CMD_SHELL="${CMD_SHELL-$DEFAULT_CMD_SHELL}"
 CMD_SHELL_ARGS="${CMD_SHELL_ARGS-${DEFAULT_CMD_SHELL_ARGS}}"
 
@@ -123,14 +125,27 @@ mkdir -p "$CMD_OUT_DIR"
 pids=""
 
 ############## Functions to help generate output
-# TODO use tput
-BLUE=34
-RED=31
-GREY=37
-NONE=0
+COLORS_SUPPORTED="$(tput colors)"
+BLUE=4
+RED=1
+UNDEREMPH=UNDEREMPH
+GREY=7
+YELLOW=3
+NONE=NONE
 color() {
   if [ "$ENABLE_COLORS" = true ]; then
-    printf "\\e[%sm" "$1"
+    if [ "$1" = "$UNDEREMPH" ]; then
+      if [ "$LIGHT_MODE" = true ]; then
+        tput setaf "$YELLOW"
+      else
+        tput setaf "$GREY"
+      fi
+    elif [ "$1" = "$NONE" ]; then
+      # Turn off all attributes
+      tput sgr0
+    else
+      tput setaf "$1"
+    fi
   fi
 }
 
@@ -270,7 +285,16 @@ help() {
   printf '%s' \
        "        If enabled, errors are "
   log_color "$RED" "colored."
+  printf '%s' \
+       "        If enabled, verbose logs are "
+  log_color "$BLUE" "colored."
+  printf '%s' \
+       "        If enabled, some other logs are "
+  log_color "$UNDEREMPH" "underemphasized."
+  echo "          This color may not show up well on a light background."
+  echo "          Use --light-mode in this case."
   echo "        Default: true if output is a tty, false otherwise."
+  echo "    --light-mode|--no-light-mode or set \$LIGHT_MODE=true: "
   echo "    --command-output-command|--cc or set \$SHOW_CMD_OUTPUT_CMD:"
   echo "        Command for printing stderr and stdout of a command"
   echo "        Default: $SHOW_CMD_OUTPUT_CMD_DEFAULT"
@@ -477,6 +501,8 @@ parse_option() {
     --no-emoji | -z) PARALLELY_EMOJI_OUTPUT=false ;;
     --color | -c) ENABLE_COLORS=true ;;
     --no-color | -n) ENABLE_COLORS=false ;;
+    --light-mode) LIGHT_MODE=true ;;
+    --no-light-mode) LIGHT_MODE=false ;;
     --command-output-command | --cc) validate_option_argument "$ARGUMENT" ; SHOW_CMD_OUTPUT_CMD="$ARGUMENT" ;;
     --command-output-command-args | --cc-args) PARSED_ARGUMENT=true ; SHOW_CMD_OUTPUT_CMD_ARGS="$ARGUMENT" ;;
     --sequential | -s) FORCE_SEQUENTIAL=true ;;
@@ -665,6 +691,7 @@ show_configuration() {
   log "NOTIFY_COMMAND_ARGS=$NOTIFY_COMMAND_ARGS"
   log "FAILURE_NOTIFY_COMMAND_ARGS=$FAILURE_NOTIFY_COMMAND_ARGS"
   log "ENABLE_COLORS=$ENABLE_COLORS"
+  log "LIGHT_MODE=$LIGHT_MODE"
   log "Temporary directory CMD_OUT_DIR=$CMD_OUT_DIR"
   log
 }
@@ -704,14 +731,14 @@ show_output() {
   FILE="$4"
   printf "%s" "$(color "$BLUE")$OUTPUT_NAME$(color "$NONE") output for $DISPOSITION command $NAME:"
   if [ -z "$(cat "$FILE")" ]; then
-    log_color "$GREY" " $NO_OUTPUT_INDICATOR"
+    log_color "$UNDEREMPH" " $NO_OUTPUT_INDICATOR"
   else
     log
     log + "$SHOW_CMD_OUTPUT_CMD $SHOW_CMD_OUTPUT_CMD_ARGS $FILE"
     $SHOW_CMD_OUTPUT_CMD $SHOW_CMD_OUTPUT_CMD_ARGS "$FILE"
     if [ "$(tail -c1 "$FILE")" != "$NEWLINE" ]; then
       log
-      log_color "$GREY" "$NO_EOF_NEWLINE_INDICATOR"
+      log_color "$UNDEREMPH" "$NO_EOF_NEWLINE_INDICATOR"
     fi
   fi
 }

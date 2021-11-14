@@ -566,9 +566,11 @@ while [ "$#" -gt 0 ]; do
   fi
 
   # Check for repeated names
-  if grep "^$CURRENT_NAME$" "$NAMES_FILE" &> /dev/null; then
-    error "Duplicate name $CURRENT_NAME detected. Please rename."
-    exit "$REPEATED_NAME_EXIT_CODE"
+  if [ -f "$NAMES_FILE" ]; then
+    if grep "^$CURRENT_NAME$" "$NAMES_FILE" &> /dev/null; then
+      error "Duplicate name $CURRENT_NAME detected. Please rename."
+      exit "$REPEATED_NAME_EXIT_CODE"
+    fi
   fi
   echo "$CURRENT_NAME" >> "$NAMES_FILE"
 

@@ -65,7 +65,9 @@ def elide_ppid(output: List[str]) -> None:
 
 
 def string_or_int_sort_key(string: str) -> List[Union[str, int]]:
-    return [int(word) if word.isdigit() else word for word in re.split("(\d+)", string)]
+    return [
+        int(word) if word.isdigit() else word for word in re.split("(\\d+)", string)
+    ]
 
 
 def get_demo_output() -> str:

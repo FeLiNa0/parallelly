@@ -5,6 +5,8 @@ EDIT README.template.md, not README.md directly.
 Use `make build-readme to update the README file
 -->
 
+Add Jet aerobics to your CLI!
+
 ## Usage
 
 See [demos at bottom of document](#demos) for examples with output.

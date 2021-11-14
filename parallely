@@ -16,12 +16,26 @@ if [ "$TRACE" = true ]; then
   set -x
 fi
 
+show_debug_info() {
+  debug "PPID=$PPID"
+  debug "Parent process name: $(ps -p $PPID -o comm=)"
+  debug "Is a TTY: $IS_A_TTY"
+  debug "Colors supported: $COLORS_SUPPORTED"
+}
+
 ############## Constants
 SCRIPT_NAME="parallely"
 VERSION=1.8.1
 NO_CMD_SHELL_INDICATOR=RAW
 # For some reason, plain "\n" doesn't work with test
 NEWLINE="$(printf "\n")"
+
+COLORS_SUPPORTED="$(tput colors)"
+if [ -t 1 ]; then
+  IS_A_TTY=true
+else
+  IS_A_TTY=false
+fi
 
 ############## Exit codes
 # Please skip 88
@@ -64,7 +78,7 @@ PARALLELY_SHOW_ALL_OUTPUT="${PARALLELY_SHOW_ALL_OUTPUT-$PARALLELY_VERBOSE_OUTPUT
 
 # If output is not a tty or DISPLAY is unset
 # don't show emoji
-if ! [ -t 1 ] || [ -z "${DISPLAY-}" ]; then
+if ! [ "$IS_A_TTY" = true ] || [ -z "${DISPLAY-}" ]; then
   PARALLELY_EMOJI_OUTPUT="${PARALLELY_EMOJI_OUTPUT-false}"
 fi
 PARALLELY_EMOJI_OUTPUT="${PARALLELY_EMOJI_OUTPUT-true}"
@@ -125,7 +139,6 @@ mkdir -p "$CMD_OUT_DIR"
 pids=""
 
 ############## Functions to help generate output
-COLORS_SUPPORTED="$(tput colors)"
 BLUE=4
 RED=1
 UNDEREMPH=UNDEREMPH
@@ -461,8 +474,7 @@ run_cmd() {
 
 ############## main()
 
-debug "PPID=$PPID"
-debug "Parent process name: $(ps -p $PPID -o comm=)"
+show_debug_info
 
 ############## Parse arguments
 
@@ -637,8 +649,7 @@ done
 
 ############## Validate arguments and set variables that depend on arguments
 
-debug "PPID=$PPID"
-debug "Parent process name: $(ps -p $PPID -o comm=)"
+show_debug_info
 
 if [ "$TRACE" = true ]; then
   set -x

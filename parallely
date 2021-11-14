@@ -286,6 +286,7 @@ help() {
   echo "        Which shell to run the commands in."
   echo "        Special value: $NO_CMD_SHELL_INDICATOR."
   echo "          Run the commands directly, without using a shell."
+  echo "          Does not work on ZSH."
   echo "          Use only if you know what you're doing."
   echo "        Default: $DEFAULT_CMD_SHELL"
   echo "    --shell-command-args or set \$CMD_SHELL_ARGS:"

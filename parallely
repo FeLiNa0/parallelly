@@ -283,6 +283,9 @@ help() {
   echo "        Default: false or value of \$ALL_OUTPUT if it is set"
   echo "    --emoji|-e|--no-emoji|-z or set \$PARALLELY_EMOJI_OUTPUT=true:"
   echo "        Whether to print emoji."
+  echo "        Use --no-emoji if you see tofu characters (empty boxes), such as"
+  printf \
+       "        '\ue000' '\uf8ff' '\ufffd' '%s'\n" "�"
   echo "        Default: true if output is a tty and \$DISPLAY is set, false otherwise."
   echo "    --color|-c|--no-color|-n or set \$ENABLE_COLORS=true: "
   printf '%s' \

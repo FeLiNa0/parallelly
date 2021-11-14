@@ -1,4 +1,5 @@
 #!/bin/sh
+export PARALLELY_TMP_DIR="/tmp/demo-tmp-dir"  # Deterministic output please
 set -eu
 echo Parallely prints emoji and colors when it seems they could be supported.
 echo To turn them off, use \`--no-color\` and \`--no-emoji\`.

@@ -1,4 +1,5 @@
 #!/bin/sh
+export PARALLELY_TMP_DIR="/tmp/demo-tmp-dir"  # Deterministic output please
 set -eu
 echo Parallely supports \`--sequential or -s\` to run commands sequentially instead of in parallel.
 echo This is useful for testing and comparison purposes.

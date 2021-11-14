@@ -1,4 +1,5 @@
 #!/bin/sh
+export PARALLELY_TMP_DIR="/tmp/demo-tmp-dir"  # Deterministic output please
 set -eu
 echo You can show the configuration, the version, or debug information easily.
 echo

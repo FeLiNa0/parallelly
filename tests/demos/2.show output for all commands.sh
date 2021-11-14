@@ -1,4 +1,5 @@
 #!/bin/sh
+export PARALLELY_TMP_DIR="/tmp/demo-tmp-dir"  # Deterministic output please
 set -eu
 echo Use \`-a\` to show output for successful commands as well.
 echo

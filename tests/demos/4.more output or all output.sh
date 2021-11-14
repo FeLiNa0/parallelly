@@ -1,4 +1,5 @@
 #!/bin/sh
+export PARALLELY_TMP_DIR="/tmp/demo-tmp-dir"  # Deterministic output please
 set -eu
 echo To show more output, or all output use the \`--command-output-command or --c\`
 echo and \`--command-output-command-args or --cc-args\` arguments.

@@ -64,6 +64,7 @@ Configuration:
         Which shell to run the commands in.
         Special value: RAW.
           Run the commands directly, without using a shell.
+          Does not work on ZSH.
           Use only if you know what you're doing.
         Default: sh
     --shell-command-args or set $CMD_SHELL_ARGS:
@@ -92,19 +93,6 @@ Configuration:
 
 Examples:
 
-  Multiple commands:
-    parallely fail 'echo failure && exit 1' \
-      fail-printf-nonewline 'printf "%s %s"\ abc 123 ; false' \
-      fail-rsync-src 'rsync -rhP nonexistentdir backup' \
-      delay 'sleep 0.2' \
-      ok-and-output 'echo test ; echo stderr test >&2' \
-      fail-slower-delay '! sleep 0.4' \
-      fail-no-output 'exit 210' \
-      'long name for command with spaces' 'true && echo ok'
-
-    The odd numbered arguments are short, filesafe names for each command.
-    The names are used in notifications and files storing outout.
-
   A command without arguments:
     parallely list-files ls
 
@@ -120,6 +108,10 @@ Examples:
 
   A command with arguments that have spaces in them:
     parallely printf-abc 'printf "%s %s" abc 123'
+
+  Show more or all command output
+    parallely multi-line-output --all-output --cc-args '-n5' 'echo 1; echo 2; echo 3; printf "%s %s" abc 123'
+    parallely multi-line-output --all-output --cc cat --cc-args '' 'echo 1; echo 2; echo 3; printf "%s %s" abc 123'
 
   Shell commands:
     parallely test-exit 'echo failure && exit 1'
@@ -137,8 +129,21 @@ Examples:
     Regardless, you are notified as soon as a command finishes.
     VERBOSE=true CLI_NOTIFY=true parallely 3 'sleep 2' 2 'sleep 1' 1 'sleep 0.1'
 
+  Multiple commands:
+    parallely fail 'echo failure && exit 1' \
+      fail-printf-nonewline 'printf "%s %s"\ abc 123 ; false' \
+      fail-rsync-src 'rsync -rhP nonexistentdir backup' \
+      delay 'sleep 0.2' \
+      ok-and-output 'echo test ; echo stderr test >&2' \
+      fail-slower-delay '! sleep 0.4' \
+      fail-no-output 'exit 210' \
+      'long name for command with spaces' 'true && echo ok'
+
+    The odd numbered arguments are short, filesafe names for each command.
+    The names are used in notifications and files storing outout.
+
 Contributors: Hugo O. Rivera
-Version: 1.8.0
+Version: 1.8.1
 
 ```
 

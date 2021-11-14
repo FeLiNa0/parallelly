@@ -18,7 +18,7 @@ fi
 
 ############## Constants
 SCRIPT_NAME="parallely"
-VERSION=1.8.0
+VERSION=1.8.1
 NO_CMD_SHELL_INDICATOR=RAW
 # For some reason, plain "\n" doesn't work with test
 NEWLINE="$(printf "\n")"

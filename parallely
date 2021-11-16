@@ -603,9 +603,9 @@ run_cmd() {
     echo "$RUNTIME" > "$TIME_FILE"
 
     if [ "$STATUS_CODE" = 0 ]; then
-      $NOTIFY_COMMAND $NOTIFY_COMMAND_ARGS "parallely notification: $NAME command finished in $RUNTIME $(noun "$RUNTIME" second)." "$COMMAND" || true
+      $NOTIFY_COMMAND $NOTIFY_COMMAND_ARGS "parallely: $NAME command finished in ${RUNTIME}sec." "$COMMAND" || true
     else
-      $FAILURE_NOTIFY_COMMAND $FAILURE_NOTIFY_COMMAND_ARGS "parallely notification: ERROR $NAME command failed in $RUNTIME $(noun "$RUNTIME" second)." "$COMMAND"
+      $FAILURE_NOTIFY_COMMAND $FAILURE_NOTIFY_COMMAND_ARGS "parallely: ERROR $NAME command after ${RUNTIME}sec." "$COMMAND"
     fi
     return "$STATUS_CODE"
   }

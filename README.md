@@ -389,7 +389,7 @@ FORCE_SEQUENTIAL is set: Waiting for command sleep7 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep8 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep9 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep0 to finish
-10 commands finished in 1.7 seconds.
+10 commands finished in 1.6 seconds.
 
 ```
 

@@ -1,10 +1,52 @@
 #!/usr/bin/env python3
 """Print given files, but replace <HELP_STRING> with `<command> -h`."""
+import asyncio
+import shlex
 import os.path
+from os import environ
+from hashlib import sha256
 import re
 import subprocess
-from typing import List, Union
+from typing import List, Union, Tuple, Iterable, Dict, Coroutine, TypeVar
 import sys
+
+
+SCRIPT_NAME = "parallely"
+HELP_MARKER = "<HELP_STRING>"
+HELP_STRING_CMD = f"{SCRIPT_NAME} -h"
+
+EXEC_DEMOS_IN_PARALLEL = True
+
+DEMO_MARKER = "<DEMO_OUTPUT>"
+DEMO_DIRECTORY = "tests/demos/"
+ACCEPTABLE_DEMO_EXIT_CODES = [0, 22]
+
+SECONDS_MARKER = " seconds."
+CMD_MARKER = f"+ {SCRIPT_NAME}"
+PPID_MARKER = "PPID="
+
+CWD = os.path.abspath(os.curdir)
+
+BASE_DEMO_ENV = {
+    # No user/date based strings in tmp dirs
+    "TMP_DIR_SUFFIX": "",
+    # No notifications
+    "NOTIFY_COMMAND": "true",
+    "NOTIFY_COMMAND_ARGS": "",
+    "FAILURE_NOTIFY_COMMAND": "true",
+    "FAILURE_NOTIFY_COMMAND_ARGS": "",
+    # Only pass the $PATH
+    "PATH": environ["PATH"],
+}
+
+T = TypeVar("T")
+
+
+def mk_env(demo_name_hash: str) -> Dict[str, str]:
+    return BASE_DEMO_ENV | {
+        # Deterministic tmp dir unique for every demo
+        "PARALLELY_TMP_DIR": f"/tmp/demo-tmp-dir-{demo_name_hash}",
+    }
 
 
 def log(*args, **kwargs):
@@ -16,19 +58,9 @@ def warn(*args, **kwargs):
     log("WARNING", *args, **kwargs)
 
 
-SCRIPT_NAME = "parallely"
-HELP_MARKER = "<HELP_STRING>"
-HELP_STRING_CMD = f"{SCRIPT_NAME} -h"
-
-DEMO_MARKER = "<DEMO_OUTPUT>"
-DEMO_DIRECTORY = "tests/demos/"
-ACCEPTABLE_DEMO_EXIT_CODES = [0, 22]
-
-SECONDS_MARKER = " seconds."
-CMD_MARKER = f"+ {SCRIPT_NAME}"
-PPID_MARKER = "PPID="
-
-CWD = os.path.abspath(os.curdir)
+def fail(*args, **kwargs):
+    log("FAILURE", *args, **kwargs)
+    sys.exit(1)
 
 
 def get_help(path: str) -> str:
@@ -68,52 +100,98 @@ def string_or_int_sort_key(string: str) -> List[Union[str, int]]:
     ]
 
 
-def get_demo_output() -> str:
-    files = sorted(os.listdir(DEMO_DIRECTORY), key=string_or_int_sort_key)
+async def run_tasks(*async_tasks: Coroutine[None, None, T]) -> Iterable[T]:
+    if EXEC_DEMOS_IN_PARALLEL:
+        return await asyncio.gather(*async_tasks)
+    results = []
+    for task in async_tasks:
+        results.append(await task)
+    return results
+
+
+async def get_demo_output(
+    demo_index: int, demo_name: str, demo_hash: str, file: str
+) -> Tuple[int, List[str]]:
     outputs = []
-    for i, file in enumerate(files):
-        log(f"getting demo #{1 + i}/{len(files)} output: {file}")
-        filepath = os.path.join(DEMO_DIRECTORY, file)
-        # send stderr to stdout
-        completed_process = subprocess.run(
-            ["/bin/bash", filepath],
-            stderr=subprocess.STDOUT,
-            stdout=subprocess.PIPE,
+    filepath = os.path.join(DEMO_DIRECTORY, file)
+    # send stderr to stdout
+    proc = await asyncio.create_subprocess_shell(
+        shlex.join(["/bin/bash", filepath]),
+        stderr=asyncio.subprocess.STDOUT,
+        stdout=asyncio.subprocess.PIPE,
+        env=mk_env(demo_hash),
+    )
+    # Stderr is not needed as it is piped into stdout
+    stdout, _ = await proc.communicate()
+
+    log(f"Demo #{demo_index} finished: {file}")
+
+    outputs.append(f"\n### Demo {demo_index}: {demo_name}\n\n")
+    output_str = stdout.decode("utf-8")
+
+    returncode = proc.returncode
+    if returncode not in ACCEPTABLE_DEMO_EXIT_CODES:
+        warn(
+            f"Demo {demo_index} status code {returncode} is not {' or '.join(map(str, ACCEPTABLE_DEMO_EXIT_CODES))}! Output:",
+            repr(output_str),
         )
+
+    # Convert to lines
+    output: List[str] = output_str.split("\n")
+
+    wrap_command(output)
+    round_seconds(output)
+    elide_ppid(output)
+
+    found_code = False
+    for i, line in enumerate(output):
+        if "BEGIN_CODE" in line:
+            output[i] = line.replace("BEGIN_CODE", "```")
+            found_code = True
+
+    if not found_code:
+        warn(
+            f"String 'BEGIN_CODE' not found in output of demo file {filepath}",
+            "output:\n",
+            output,
+        )
+        outputs.append("```\n")
+    outputs += output
+    outputs.append("```")
+    return demo_index, outputs
+
+
+async def get_all_demos_output() -> str:
+    files = sorted(os.listdir(DEMO_DIRECTORY), key=string_or_int_sort_key)
+
+    outputs = []
+    demo_info = {}
+    demo_hashes = set()
+    tasks: List[Coroutine[None, None, Tuple[int, List[str]]]] = []
+    for i, file in enumerate(files):
         demo_name = re.sub("^\\d+\\.(.+).sh$", "\\1", file)
-        outputs.append(f"\n### Demo {1 + i}: {demo_name}\n\n")
-        output_str = completed_process.stdout.decode("utf-8")
-
-        returncode = completed_process.returncode
-        if returncode not in ACCEPTABLE_DEMO_EXIT_CODES:
-            warn(
-                f"Process status code {returncode} is not {' '.join(map(str, ACCEPTABLE_DEMO_EXIT_CODES))}! Output:",
-                repr(output_str),
+        # Used for deterministic tmp dir names
+        demo_hash = sha256(demo_name.encode("utf-8")).hexdigest()[:10]
+        if demo_hash in demo_hashes:
+            fail("Duplicate demo name hash! Cannot continue")
+        else:
+            demo_hashes.add(demo_hash)
+        demo_info[i] = {
+            "demo_name": demo_name,
+            "demo_hash": demo_hash,
+        }
+    for i, file in enumerate(files):
+        tasks.append(
+            get_demo_output(
+                i + 1, demo_info[i]["demo_name"], demo_info[i]["demo_hash"], file
             )
-
-        # Convert to lines
-        output: List[str] = output_str.split("\n")
-
-        wrap_command(output)
-        round_seconds(output)
-        elide_ppid(output)
-
-        found_code = False
-        for i, line in enumerate(output):
-            if "BEGIN_CODE" in line:
-                output[i] = line.replace("BEGIN_CODE", "```")
-                found_code = True
-
-        if not found_code:
-            warn(
-                f"WARNING: string 'BEGIN_CODE' not found in output of demo file {filepath}",
-                "output:\n",
-                output,
-            )
-            outputs.append("```\n")
-        outputs += output
-        outputs.append("```")
-    return "\n".join(outputs)
+        )
+    outputs = await run_tasks(*tasks)
+    output = sum(
+        [out for _, out in sorted(outputs, key=lambda ix_and_out: ix_and_out[0])],
+        [],
+    )
+    return "\n".join(output)
 
 
 def main():
@@ -125,7 +203,7 @@ def main():
     path = os.path.dirname(fname)
 
     help_string = get_help(path)
-    demo_output = get_demo_output()
+    demo_output = asyncio.run(get_all_demos_output())
 
     with open(fname, "r", encoding="utf-8") as file:
         for line in file:

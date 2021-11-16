@@ -1,5 +1,4 @@
 #!/bin/sh
-export PARALLELY_TMP_DIR="/tmp/demo-tmp-dir"  # Deterministic output please
 set -eu
 echo "Here, we're going to run ten sleep 0.1 commands in parallel and then sequentially to compare the runtime."
 echo

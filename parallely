@@ -753,11 +753,15 @@ fi
 # Used to handle the --tmp-dir argument
 make_cmd_out_dir() {
   # Try to have a human readable suffix in the directory name
-  if command -v whoami > /dev/null && command -v date > /dev/null; then
-    TMP_DIR_SUFFIX="-$(whoami)-$(date +%Y-%m-%d)"
+  if [ "${TMP_DIR_SUFFIX-__UNINITIALIZED__}" = __UNINITIALIZED__ ]; then
+    if command -v whoami > /dev/null && command -v date > /dev/null; then
+      TMP_DIR_SUFFIX="-$(whoami)-$(date +%Y-%m-%d)"
+    else
+      error whomai or date not installed
+      TMP_DIR_SUFFIX=
+    fi
   else
-    error whomai or date not installed
-    TMP_DIR_SUFFIX=
+    debug "Using existing TMP_DIR_SUFFIX=$TMP_DIR_SUFFIX"
   fi
 
   CMD_OUT_DIR="$PARALLELY_TMP_DIR/$SCRIPT_NAME-logs$TMP_DIR_SUFFIX"

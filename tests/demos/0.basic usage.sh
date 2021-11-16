@@ -1,5 +1,4 @@
 #!/bin/sh
-export PARALLELY_TMP_DIR="/tmp/demo-tmp-dir"  # Deterministic output please
 set -eu
 echo Parallely runs multiple commands in parallel and captures their output.
 echo You pass it pairs of arguments: a name for the command and the command itself.

@@ -189,7 +189,7 @@ Examples:
     The names are used in notifications and files storing outout.
 
 Add synchronized swimming to your CLI!
-Version: 1.9.2
+Version: 1.93.3
 
 ```
 
@@ -364,7 +364,7 @@ $ parallely \
     sleep9 'sleep 0.1' \
     sleep0 'sleep 0.1'
 parallely will run 10 commands in parallel 
-10 commands finished in 0.2 seconds.
+10 commands finished in 0.1 seconds.
 + echo
 
 $ parallely \
@@ -389,7 +389,7 @@ FORCE_SEQUENTIAL is set: Waiting for command sleep7 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep8 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep9 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep0 to finish
-10 commands finished in 1.6 seconds.
+10 commands finished in 1.5 seconds.
 
 ```
 
@@ -419,7 +419,7 @@ Command lots-of-output succeeded in 0.0 seconds.
 /tmp/demo-tmp-dir-ca128f1014/parallely-logs/lots-of-output.stderr
 /tmp/demo-tmp-dir-ca128f1014/parallely-logs/lots-of-output.stdout
 STDERR output for successful command lots-of-output: (no output)
-STDOUT output for successful command lots-of-output: 36.85 KiBs 1162 lines
+STDOUT output for successful command lots-of-output: 36.77 KiBs 1162 lines
 + tail -n1 /tmp/demo-tmp-dir-ca128f1014/parallely-logs/lots-of-output.stdout
 # End of parallely script
 
@@ -432,7 +432,7 @@ STDERR output for failed command failing: (no output)
 STDOUT output for failed command failing: 6 bytes 1 line
 + tail -n1 /tmp/demo-tmp-dir-ca128f1014/parallely-logs/failing.stdout
 ERROR
-3 commands finished in 0.4 seconds.
+3 commands finished in 0.3 seconds.
 ERROR 1/3 command failed: failing 
 
 ```
@@ -515,7 +515,7 @@ Command lots-of-output succeeded in 0.0 seconds.
 /tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/lots-of-output.stderr
 /tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/lots-of-output.stdout
 STDERR output for successful command lots-of-output: (no output)
-STDOUT output for successful command lots-of-output: 36.85 KiBs 1162 lines
+STDOUT output for successful command lots-of-output: 36.77 KiBs 1162 lines
 + tail -n1 /tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/lots-of-output.stdout
 # End of parallely script
 
@@ -531,7 +531,7 @@ ERROR
 
 ============= SUMMARY =============
 2 commands succeeded
-3 commands finished in 0.4 seconds.
+3 commands finished in 0.3 seconds.
 ERROR 1/3 command failed: failing 
 
 ```
@@ -560,7 +560,7 @@ STDOUT output for successful command onlylastline: 9 bytes 4 lines
 e
 (no newline at end of output)
 
-1 command finished in 0.1 seconds.
+1 command finished in 0.0 seconds.
 + echo
 
 $ parallely \
@@ -631,7 +631,7 @@ Command lots-of-output succeeded in 0.0 seconds.
 /tmp/demo-tmp-dir-865db193fd/parallely-logs/lots-of-output.stderr
 /tmp/demo-tmp-dir-865db193fd/parallely-logs/lots-of-output.stdout
 STDERR output for successful command lots-of-output: (no output)
-STDOUT output for successful command lots-of-output: 36.85 KiBs 1162 lines
+STDOUT output for successful command lots-of-output: 36.77 KiBs 1162 lines
 + tail -n1 /tmp/demo-tmp-dir-865db193fd/parallely-logs/lots-of-output.stdout
 # End of parallely script
 
@@ -644,7 +644,7 @@ STDERR output for failed command failing: (no output)
 STDOUT output for failed command failing: 6 bytes 1 line
 + tail -n1 /tmp/demo-tmp-dir-865db193fd/parallely-logs/failing.stdout
 ERROR
-3 commands finished in 0.4 seconds.
+3 commands finished in 0.3 seconds.
 ERROR 1/3 command failed: failing 
 
 ```
@@ -680,7 +680,7 @@ Command lots-of-output succeeded in 0.0 seconds.
 /tmp/demo-tmp-dir-9c3727b652/parallely-logs/lots-of-output.stderr
 /tmp/demo-tmp-dir-9c3727b652/parallely-logs/lots-of-output.stdout
 STDERR output for successful command lots-of-output: (no output)
-STDOUT output for successful command lots-of-output: 36.85 KiBs 1162 lines
+STDOUT output for successful command lots-of-output: 36.77 KiBs 1162 lines
 + tail -n1 /tmp/demo-tmp-dir-9c3727b652/parallely-logs/lots-of-output.stdout
 # End of parallely script
 
@@ -693,7 +693,7 @@ STDOUT output for successful command failing: 6 bytes 1 line
 + tail -n1 /tmp/demo-tmp-dir-9c3727b652/parallely-logs/failing.stdout
 ERROR
 
-3 commands finished in 0.4 seconds.
+3 commands finished in 0.3 seconds.
 
 ```
 
@@ -760,7 +760,7 @@ Temporary directory CMD_OUT_DIR=(unset!)
 
 $ parallely \
     --version
-1.9.2
+1.93.3
 $ parallely \
     --debug
 DEBUG: arglog: Remaining (0)

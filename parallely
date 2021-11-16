@@ -274,7 +274,7 @@ format_time() {
   local TIME="$(cat)"
   if ( echo "$TIME" | grep '\.' ) > /dev/null; then
     # Only 4 digits
-    TIME="$(echo "$TIME" | rev | cut -c4- | rev)"
+    TIME="$(printf '%.04f' "$TIME")"
   fi
   echo "$TIME"
 }

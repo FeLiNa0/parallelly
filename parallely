@@ -287,9 +287,9 @@ bytes_to_human_readable() {
     local byte_names="byte KiB MiB GiB TiB PiB EiB YiB ZiB"
     local byte_names_count="$(echo "$byte_names" | wc -w)"
     while [ "$integer" -gt 1023 ] && [ "$iterations" -lt "$byte_names_count" ]; do
-        printf -v decimal ".%02d" $((integer % 1024 * 100 / 1024))
-        integer=$((integer / 1024))
-        iterations=$((iterations + 1))
+      decimal="$(printf ".%02d" $((integer % 1024 * 100 / 1024)))"
+      integer=$((integer / 1024))
+      iterations=$((iterations + 1))
     done
     if [ "$decimal" = ".00" ]; then
       decimal=""

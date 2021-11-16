@@ -189,7 +189,7 @@ Examples:
     The names are used in notifications and files storing outout.
 
 Add synchronized swimming to your CLI!
-Version: 1.93.3
+Version: 1.9.3
 
 ```
 
@@ -693,7 +693,7 @@ STDOUT output for successful command failing: 6 bytes 1 line
 + tail -n1 /tmp/demo-tmp-dir-9c3727b652/parallely-logs/failing.stdout
 ERROR
 
-3 commands finished in 0.3 seconds.
+3 commands finished in 0.4 seconds.
 
 ```
 
@@ -760,7 +760,7 @@ Temporary directory CMD_OUT_DIR=(unset!)
 
 $ parallely \
     --version
-1.93.3
+1.9.3
 $ parallely \
     --debug
 DEBUG: arglog: Remaining (0)

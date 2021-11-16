@@ -31,13 +31,20 @@ BASE_DEMO_ENV = {
     # No user/date based strings in tmp dirs
     "TMP_DIR_SUFFIX": "",
     # No notifications
-    "NOTIFY_COMMAND": "true",
-    "NOTIFY_COMMAND_ARGS": "",
-    "FAILURE_NOTIFY_COMMAND": "true",
-    "FAILURE_NOTIFY_COMMAND_ARGS": "",
     # Only pass the $PATH
     "PATH": environ["PATH"],
+    # For showing notifications with notify-send
+    "DISPLAY": environ.get("DISPLAY", ""),
 }
+
+if BASE_DEMO_ENV["DISPLAY"] == "":
+    BASE_DEMO_ENV |= {
+        "NOTIFY_COMMAND": "true",
+        "NOTIFY_COMMAND_ARGS": "",
+        "FAILURE_NOTIFY_COMMAND": "true",
+        "FAILURE_NOTIFY_COMMAND_ARGS": "",
+    }
+
 
 T = TypeVar("T")
 

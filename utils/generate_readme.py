@@ -81,7 +81,7 @@ def wrap_command(output: List[str]) -> None:
 def round_seconds(output: List[str]) -> None:
     for i, line in enumerate(output):
         if line.endswith(SECONDS_MARKER):
-            output[i] = re.sub(f"(\\d+.\\d)\\d+({SECONDS_MARKER})", "\\1\\2", line)
+            output[i] = re.sub(f"(\\d+\\.\\d)\\d+({SECONDS_MARKER})", "\\1\\2", line)
 
 
 def elide_ppid(output: List[str]) -> None:

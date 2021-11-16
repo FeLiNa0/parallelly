@@ -270,6 +270,15 @@ time_in_sec() {
   date +%s.%N
 }
 
+format_time() {
+  local TIME="$(cat)"
+  if ( echo "$TIME" | grep '\.' ) > /dev/null; then
+    # Only 4 digits
+    TIME="$(echo "$TIME" | rev | cut -c4- | rev)"
+  fi
+  echo "$TIME"
+}
+
 float_to_int() {
   echo "$1" | cut -d\. -f1
 }
@@ -567,8 +576,8 @@ run_cmd() {
   verbose "$STDOUT_FILE"
 
   __run_cmd() {
-    NAME="$1"
-    COMMAND="$2"
+    local NAME="$1"
+    local COMMAND="$2"
 
     if [ "$CMD_SHELL" = $NO_CMD_SHELL_INDICATOR ]; then
       $COMMAND
@@ -578,22 +587,25 @@ run_cmd() {
   }
 
   __run_time_notify_capture_cmd() {
-    NAME="$1"
-    COMMAND="$2"
-    STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
-    STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
-    TIME_FILE="$CMD_OUT_DIR/$NAME.time"
+    local NAME="$1"
+    local COMMAND="$2"
+    local STDERR_FILE="$CMD_OUT_DIR/$NAME.stderr"
+    local STDOUT_FILE="$CMD_OUT_DIR/$NAME.stdout"
+    local TIME_FILE="$CMD_OUT_DIR/$NAME.time"
 
-    LOCAL_START_TIME="$(time_in_sec)"
+    local LOCAL_START_TIME="$(time_in_sec)"
     set +eu
     ( __run_cmd "$NAME" "$COMMAND" > "$STDOUT_FILE" 2> "$STDERR_FILE" )
-    STATUS_CODE="$?"
-    ( echo "$(time_in_sec)" "$LOCAL_START_TIME" | awk '{print $1 - $2}' || echo "UNKNOWN" ) > "$TIME_FILE"
+
+
+    local STATUS_CODE="$?"
+    local RUNTIME="$(echo "$(time_in_sec)" "$LOCAL_START_TIME" | awk '{print $1 - $2}' | format_time || echo "UNKNOWN")"
+    echo "$RUNTIME" > "$TIME_FILE"
 
     if [ "$STATUS_CODE" = 0 ]; then
-      $NOTIFY_COMMAND $NOTIFY_COMMAND_ARGS "parallely notification: $NAME command finished" "$COMMAND" || true
+      $NOTIFY_COMMAND $NOTIFY_COMMAND_ARGS "parallely notification: $NAME command finished in $RUNTIME $(noun "$RUNTIME" second)." "$COMMAND" || true
     else
-      $FAILURE_NOTIFY_COMMAND $FAILURE_NOTIFY_COMMAND_ARGS "parallely notification: ERROR $NAME command failed" "$COMMAND"
+      $FAILURE_NOTIFY_COMMAND $FAILURE_NOTIFY_COMMAND_ARGS "parallely notification: ERROR $NAME command failed in $RUNTIME $(noun "$RUNTIME" second)." "$COMMAND"
     fi
     return "$STATUS_CODE"
   }
@@ -624,6 +636,7 @@ run_cmd() {
 ############## Dependency checks
 
 require_command wc
+require_command cut
 require_command grep
 require_command mkdir
 require_command rm
@@ -1135,7 +1148,7 @@ for PID in $(echo $failedpids); do
   fi
 done
 
-TOTAL_TIME="$(subtract_two_floats "$(time_in_sec)" "$START_TIME")"
+TOTAL_TIME="$(subtract_two_floats "$(time_in_sec)" "$START_TIME" | format_time)"
 
 ############## Print summary and timing
 verbose_section SUMMARY

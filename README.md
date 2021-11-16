@@ -189,7 +189,7 @@ Examples:
     The names are used in notifications and files storing outout.
 
 Add synchronized swimming to your CLI!
-Version: 1.9.1
+Version: 1.9.2
 
 ```
 
@@ -341,7 +341,7 @@ STDERR output for failed command failing: (no output)
 STDOUT output for failed command failing: 6 bytes 1 line
 + tail -n1 /tmp/demo-tmp-dir-24e84ee24f/parallely-logs/failing.stdout
 ERROR
-3 commands finished in 0.5 seconds.
+3 commands finished in 0.3 seconds.
 ERROR 1/3 command failed: failing 
 
 ```
@@ -389,7 +389,7 @@ FORCE_SEQUENTIAL is set: Waiting for command sleep7 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep8 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep9 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep0 to finish
-10 commands finished in 1.4 seconds.
+10 commands finished in 1.7 seconds.
 
 ```
 
@@ -419,7 +419,7 @@ Command lots-of-output succeeded in 0.0 seconds.
 /tmp/demo-tmp-dir-ca128f1014/parallely-logs/lots-of-output.stderr
 /tmp/demo-tmp-dir-ca128f1014/parallely-logs/lots-of-output.stdout
 STDERR output for successful command lots-of-output: (no output)
-STDOUT output for successful command lots-of-output: 36.46 KiBs 1149 lines
+STDOUT output for successful command lots-of-output: 36.85 KiBs 1162 lines
 + tail -n1 /tmp/demo-tmp-dir-ca128f1014/parallely-logs/lots-of-output.stdout
 # End of parallely script
 
@@ -432,7 +432,7 @@ STDERR output for failed command failing: (no output)
 STDOUT output for failed command failing: 6 bytes 1 line
 + tail -n1 /tmp/demo-tmp-dir-ca128f1014/parallely-logs/failing.stdout
 ERROR
-3 commands finished in 0.6 seconds.
+3 commands finished in 0.4 seconds.
 ERROR 1/3 command failed: failing 
 
 ```
@@ -469,10 +469,10 @@ PARALLELY_TMP_DIR=/tmp/demo-tmp-dir-86b09d2f5f
 SHOW_LINE_COUNT=true
 SHOW_BYTE_COUNT=true
 HUMAN_READABLE_BYTE_COUNT=true
-NOTIFY_COMMAND=true
-FAILURE_NOTIFY_COMMAND=true
+NOTIFY_COMMAND=notify-send
+FAILURE_NOTIFY_COMMAND=notify-send
 NOTIFY_COMMAND_ARGS=
-FAILURE_NOTIFY_COMMAND_ARGS=
+FAILURE_NOTIFY_COMMAND_ARGS=--urgency=critical
 ENABLE_COLORS=false
 LIGHT_MODE=false
 SHOW_CONFIGURATION=false
@@ -515,7 +515,7 @@ Command lots-of-output succeeded in 0.0 seconds.
 /tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/lots-of-output.stderr
 /tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/lots-of-output.stdout
 STDERR output for successful command lots-of-output: (no output)
-STDOUT output for successful command lots-of-output: 36.46 KiBs 1149 lines
+STDOUT output for successful command lots-of-output: 36.85 KiBs 1162 lines
 + tail -n1 /tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/lots-of-output.stdout
 # End of parallely script
 
@@ -531,7 +531,7 @@ ERROR
 
 ============= SUMMARY =============
 2 commands succeeded
-3 commands finished in 0.6 seconds.
+3 commands finished in 0.4 seconds.
 ERROR 1/3 command failed: failing 
 
 ```
@@ -579,7 +579,7 @@ d
 e
 (no newline at end of output)
 
-1 command finished in 0.1 seconds.
+1 command finished in 0.0 seconds.
 + echo
 
 $ parallely \
@@ -600,7 +600,7 @@ d
 e
 (no newline at end of output)
 
-1 command finished in 0.1 seconds.
+1 command finished in 0.0 seconds.
 
 ```
 
@@ -631,7 +631,7 @@ Command lots-of-output succeeded in 0.0 seconds.
 /tmp/demo-tmp-dir-865db193fd/parallely-logs/lots-of-output.stderr
 /tmp/demo-tmp-dir-865db193fd/parallely-logs/lots-of-output.stdout
 STDERR output for successful command lots-of-output: (no output)
-STDOUT output for successful command lots-of-output: 36.46 KiBs 1149 lines
+STDOUT output for successful command lots-of-output: 36.85 KiBs 1162 lines
 + tail -n1 /tmp/demo-tmp-dir-865db193fd/parallely-logs/lots-of-output.stdout
 # End of parallely script
 
@@ -644,7 +644,7 @@ STDERR output for failed command failing: (no output)
 STDOUT output for failed command failing: 6 bytes 1 line
 + tail -n1 /tmp/demo-tmp-dir-865db193fd/parallely-logs/failing.stdout
 ERROR
-3 commands finished in 0.6 seconds.
+3 commands finished in 0.4 seconds.
 ERROR 1/3 command failed: failing 
 
 ```
@@ -680,7 +680,7 @@ Command lots-of-output succeeded in 0.0 seconds.
 /tmp/demo-tmp-dir-9c3727b652/parallely-logs/lots-of-output.stderr
 /tmp/demo-tmp-dir-9c3727b652/parallely-logs/lots-of-output.stdout
 STDERR output for successful command lots-of-output: (no output)
-STDOUT output for successful command lots-of-output: 36.46 KiBs 1149 lines
+STDOUT output for successful command lots-of-output: 36.85 KiBs 1162 lines
 + tail -n1 /tmp/demo-tmp-dir-9c3727b652/parallely-logs/lots-of-output.stdout
 # End of parallely script
 
@@ -693,7 +693,7 @@ STDOUT output for successful command failing: 6 bytes 1 line
 + tail -n1 /tmp/demo-tmp-dir-9c3727b652/parallely-logs/failing.stdout
 ERROR
 
-3 commands finished in 0.6 seconds.
+3 commands finished in 0.4 seconds.
 
 ```
 
@@ -721,10 +721,10 @@ PARALLELY_TMP_DIR=/tmp/demo-tmp-dir-8836bf85cb
 SHOW_LINE_COUNT=true
 SHOW_BYTE_COUNT=true
 HUMAN_READABLE_BYTE_COUNT=true
-NOTIFY_COMMAND=true
-FAILURE_NOTIFY_COMMAND=true
+NOTIFY_COMMAND=notify-send
+FAILURE_NOTIFY_COMMAND=notify-send
 NOTIFY_COMMAND_ARGS=
-FAILURE_NOTIFY_COMMAND_ARGS=
+FAILURE_NOTIFY_COMMAND_ARGS=--urgency=critical
 ENABLE_COLORS=false
 LIGHT_MODE=false
 SHOW_CONFIGURATION=true
@@ -748,10 +748,10 @@ PARALLELY_TMP_DIR=/tmp/demo-tmp-dir-8836bf85cb
 SHOW_LINE_COUNT=true
 SHOW_BYTE_COUNT=true
 HUMAN_READABLE_BYTE_COUNT=true
-NOTIFY_COMMAND=true
-FAILURE_NOTIFY_COMMAND=true
+NOTIFY_COMMAND=notify-send
+FAILURE_NOTIFY_COMMAND=notify-send
 NOTIFY_COMMAND_ARGS=
-FAILURE_NOTIFY_COMMAND_ARGS=
+FAILURE_NOTIFY_COMMAND_ARGS=--urgency=critical
 ENABLE_COLORS=false
 LIGHT_MODE=true
 SHOW_CONFIGURATION=true
@@ -760,7 +760,7 @@ Temporary directory CMD_OUT_DIR=(unset!)
 
 $ parallely \
     --version
-1.9.1
+1.9.2
 $ parallely \
     --debug
 DEBUG: arglog: Remaining (0)

@@ -126,7 +126,7 @@ if [ -z "${PARALLELY_TMP_DIR-}" ]; then
   require_command mktemp "or set \$PARALLELY_TMP_DIR"
 fi
 
-PARALLELY_TMP_DIR="${PARALLELY_TMP_DIR-$(mktemp --directory)}"
+PARALLELY_TMP_DIR="${PARALLELY_TMP_DIR-$(mktemp -d)}"
 
 SHOW_LINE_COUNT="${SHOW_LINE_COUNT-true}"
 SHOW_BYTE_COUNT="${SHOW_BYTE_COUNT-true}"
@@ -1077,3 +1077,4 @@ if [ "$FAILURE" = true ]; then
 fi
 
 # End of parallely script
+

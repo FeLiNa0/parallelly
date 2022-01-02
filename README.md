@@ -189,7 +189,7 @@ Examples:
     The names are used in notifications and files storing outout.
 
 Add synchronized swimming to your CLI!
-Version: 1.9.3
+Version: 1.10.0
 
 ```
 
@@ -760,7 +760,7 @@ Temporary directory CMD_OUT_DIR=(unset!)
 
 $ parallelly \
     --version
-1.9.3
+1.10.0
 $ parallelly \
     --debug
 DEBUG: arglog: Remaining (0)

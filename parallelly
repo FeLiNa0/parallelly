@@ -26,11 +26,11 @@ show_debug_info() {
 }
 
 ############## Constants
-SCRIPT_NAME="parallely"
+SCRIPT_NAME="parallelly"
 VERSION=1.9.3
 NO_CMD_SHELL_INDICATOR=RAW
-SUCCESSFUL_MARKER="____PARALLELY_SUCCESSFUL____"
-FAILED_MARKER="____PARALLELY_FAILED____"
+SUCCESSFUL_MARKER="____PARALLELLY_SUCCESSFUL____"
+FAILED_MARKER="____PARALLELLY_FAILED____"
 # For some reason, plain "\n" doesn't work with test
 NEWLINE="$(printf "\n")"
 
@@ -98,21 +98,21 @@ NO_EOF_NEWLINE_INDICATOR="(no newline at end of output)"
 ############## Configurable environment variables.
 # These should be in the same order as the argument parser and the documentation
 if [ -n "${VERBOSE-}" ]; then
-  PARALLELY_VERBOSE_OUTPUT="$VERBOSE"
+  PARALLELLY_VERBOSE_OUTPUT="$VERBOSE"
 fi
-PARALLELY_VERBOSE_OUTPUT="${PARALLELY_VERBOSE_OUTPUT-false}"
+PARALLELLY_VERBOSE_OUTPUT="${PARALLELLY_VERBOSE_OUTPUT-false}"
 
 if [ -n "${ALL_OUTPUT-}" ]; then
-  PARALLELY_SHOW_ALL_OUTPUT="$ALL_OUTPUT"
+  PARALLELLY_SHOW_ALL_OUTPUT="$ALL_OUTPUT"
 fi
-PARALLELY_SHOW_ALL_OUTPUT="${PARALLELY_SHOW_ALL_OUTPUT-$PARALLELY_VERBOSE_OUTPUT}"
+PARALLELLY_SHOW_ALL_OUTPUT="${PARALLELLY_SHOW_ALL_OUTPUT-$PARALLELLY_VERBOSE_OUTPUT}"
 
 # If output is not a tty or DISPLAY is unset
 # don't show emoji
 if ! [ "$IS_A_TTY" = true ] || [ -z "${DISPLAY-}" ]; then
-  PARALLELY_EMOJI_OUTPUT="${PARALLELY_EMOJI_OUTPUT-false}"
+  PARALLELLY_EMOJI_OUTPUT="${PARALLELLY_EMOJI_OUTPUT-false}"
 fi
-PARALLELY_EMOJI_OUTPUT="${PARALLELY_EMOJI_OUTPUT-true}"
+PARALLELLY_EMOJI_OUTPUT="${PARALLELLY_EMOJI_OUTPUT-true}"
 
 FORCE_SEQUENTIAL="${FORCE_SEQUENTIAL-false}"
 
@@ -131,7 +131,7 @@ CMD_SHELL_ARGS="${CMD_SHELL_ARGS-${DEFAULT_CMD_SHELL_ARGS}}"
 SHOW_CMD_OUTPUT_CMD_ARGS="${SHOW_CMD_OUTPUT_CMD_ARGS-$SHOW_CMD_OUTPUT_CMD_ARGS_DEFAULT}"
 SHOW_CMD_OUTPUT_CMD="${SHOW_CMD_OUTPUT_CMD-$SHOW_CMD_OUTPUT_CMD_DEFAULT}"
 
-# PARALLELY_TMP_DIR requires complex initialization and that is done after
+# PARALLELLY_TMP_DIR requires complex initialization and that is done after
 # creating the logging/error functions
 MK_TEMP="${MK_TEMP-mktemp}"
 # --directory doesn't work on MacOS
@@ -196,7 +196,7 @@ color() {
 }
 
 emoji() {
-  if [ "$PARALLELY_EMOJI_OUTPUT" != true ]; then
+  if [ "$PARALLELLY_EMOJI_OUTPUT" != true ]; then
     return 0
   fi
 
@@ -228,7 +228,7 @@ log_color() {
 }
 
 verbose() {
-  if [ "${FORCE_LOG-false}" = true ] || [ "$PARALLELY_VERBOSE_OUTPUT" = true ] ; then
+  if [ "${FORCE_LOG-false}" = true ] || [ "$PARALLELLY_VERBOSE_OUTPUT" = true ] ; then
     log_color "$BLUE" "$@"
   fi
 }
@@ -333,9 +333,9 @@ bytes_to_human_readable() {
 
 make_fallback_tmp_directory() {
   log "Trying fallback: $1"
-  local TEST_FILE="$1/parallely-tmp-test-$(whoami)"
+  local TEST_FILE="$1/parallelly-tmp-test-$(whoami)"
   if touch "$TEST_FILE"; then
-    PARALLELY_TMP_DIR="$1"
+    PARALLELLY_TMP_DIR="$1"
   else
     error "Unable to touch file in $1: $TEST_FILE"
     return 1
@@ -343,17 +343,17 @@ make_fallback_tmp_directory() {
 }
 
 set_or_make_base_tmp_directory() {
-  if [ -z "${PARALLELY_TMP_DIR-}" ]; then
+  if [ -z "${PARALLELLY_TMP_DIR-}" ]; then
     debug "Creating a tmp directory"
-    require_command "$MK_TEMP" "or set \$PARALLELY_TMP_DIR"
-    PARALLELY_TMP_DIR="$("$MK_TEMP" "$MK_TEMP_ARGS" || true)"
-    if [ -z "${PARALLELY_TMP_DIR-}" ]; then
-      log "Parallely requires a tmp dir to parse its arguments."
+    require_command "$MK_TEMP" "or set \$PARALLELLY_TMP_DIR"
+    PARALLELLY_TMP_DIR="$("$MK_TEMP" "$MK_TEMP_ARGS" || true)"
+    if [ -z "${PARALLELLY_TMP_DIR-}" ]; then
+      log "Parallelly requires a tmp dir to parse its arguments."
       error "Unable to make a directory with $MK_TEMP $MK_TEMP_ARGS"
-      log "Please set \$PARALLELY_TMP_DIR"
+      log "Please set \$PARALLELLY_TMP_DIR"
       log "Will try to use a common base directory for temporary files"
       make_fallback_tmp_directory /tmp || make_fallback_tmp_directory $HOME/tmp || \
-        ( error "Unable to make a tmp directory. Please set \$PARALLELY_TMP_DIR". ; \
+        ( error "Unable to make a tmp directory. Please set \$PARALLELLY_TMP_DIR". ; \
           exit "$NO_TMP_DIRECTORY_EXIT_CODE"
         )
     fi
@@ -397,16 +397,16 @@ help() {
   echo "  Use --show-configuration or --verbose to see configuration."
   echo
   echo "  Output configuration:"
-  echo "    --verbose|-V|--no-verbose or set \$PARALLELY_VERBOSE_OUTPUT=true:"
+  echo "    --verbose|-V|--no-verbose or set \$PARALLELLY_VERBOSE_OUTPUT=true:"
   echo "        Whether to print verbose logs."
   printf '%s' \
        "        If colors are enabled, logs are "
   log_color "$BLUE" "colored."
   echo "        Default: false or value of \$VERBOSE if it is set"
-  echo "    --all-output|-a|--not-all-output or set \$PARALLELY_SHOW_ALL_OUTPUT=true:"
+  echo "    --all-output|-a|--not-all-output or set \$PARALLELLY_SHOW_ALL_OUTPUT=true:"
   echo "        Whether to print command output for successful commands too."
   echo "        Default: false or value of \$ALL_OUTPUT if it is set"
-  echo "    --emoji|-e|--no-emoji|-z or set \$PARALLELY_EMOJI_OUTPUT=true:"
+  echo "    --emoji|-e|--no-emoji|-z or set \$PARALLELLY_EMOJI_OUTPUT=true:"
   echo "        Whether to print emoji."
   echo "        Use --no-emoji if you see tofu characters (empty boxes), such as"
   printf \
@@ -439,7 +439,7 @@ help() {
   echo "    --command-output-command-args|--cc-args or set \$SHOW_CMD_OUTPUT_CMD_ARGS:"
   echo "        Arguments for command for printing stderr and stdout of a command"
   echo "        Default: $SHOW_CMD_OUTPUT_CMD_ARGS_DEFAULT"
-  echo "    --tmp-dir or set \$PARALLELY_TMP_DIR:"
+  echo "    --tmp-dir or set \$PARALLELLY_TMP_DIR:"
   echo "        If you don't have $MK_TEMP on your system, you must set this"
   echo "        option with the environment variable!"
   echo "        Note: $SCRIPT_NAME usually needs a tmp directory to parse its arguments!"
@@ -508,7 +508,7 @@ help() {
   echo "    $SCRIPT_NAME list-files ls -V"
   echo "    $SCRIPT_NAME list-files -V ls"
   echo "    VERBOSE=true $SCRIPT_NAME list-files ls"
-  echo "    PARALLELY_VERBOSE_OUTPUT=true $SCRIPT_NAME list-files ls"
+  echo "    PARALLELLY_VERBOSE_OUTPUT=true $SCRIPT_NAME list-files ls"
   echo
   echo "  A command with arguments:"
   echo "    $SCRIPT_NAME rsync-src 'rsync -rhP src backup'"
@@ -534,7 +534,7 @@ help() {
   echo "    VERBOSE=true $SCRIPT_NAME 3 'sleep 2' 2 'sleep 1' 1 'sleep 0.1'"
   echo
   echo "    Regardless, you are notified as soon as a command finishes."
-  echo "    VERBOSE=true CLI_NOTIFY=true parallely 3 'sleep 2' 2 'sleep 1' 1 'sleep 0.1'"
+  echo "    VERBOSE=true CLI_NOTIFY=true parallelly 3 'sleep 2' 2 'sleep 1' 1 'sleep 0.1'"
   echo
   echo "  Multiple commands:"
   echo "    $SCRIPT_NAME fail 'echo failure && exit 1' \\"
@@ -544,7 +544,7 @@ help() {
   echo "      ok-and-output 'echo test ; echo stderr test >&2' \\"
   echo "      fail-slower-delay '! sleep 0.4' \\"
   echo "      fail-no-output 'exit 210' \\"
-  echo "      lots-of-output 'cat \$(which parallely)' \\"
+  echo "      lots-of-output 'cat \$(which parallelly)' \\"
   echo "      'long name for command with spaces' 'true && echo ok'"
   echo
   echo "    The odd numbered arguments are short, filesafe names for each command." 
@@ -603,9 +603,9 @@ run_cmd() {
     echo "$RUNTIME" > "$TIME_FILE"
 
     if [ "$STATUS_CODE" = 0 ]; then
-      $NOTIFY_COMMAND $NOTIFY_COMMAND_ARGS "parallely: $NAME command finished in ${RUNTIME}sec." "$COMMAND" || true
+      $NOTIFY_COMMAND $NOTIFY_COMMAND_ARGS "parallelly: $NAME command finished in ${RUNTIME}sec." "$COMMAND" || true
     else
-      $FAILURE_NOTIFY_COMMAND $FAILURE_NOTIFY_COMMAND_ARGS "parallely: ERROR $NAME command after ${RUNTIME}sec." "$COMMAND"
+      $FAILURE_NOTIFY_COMMAND $FAILURE_NOTIFY_COMMAND_ARGS "parallelly: ERROR $NAME command after ${RUNTIME}sec." "$COMMAND"
     fi
     return "$STATUS_CODE"
   }
@@ -688,19 +688,19 @@ parse_option() {
       log "$VERSION"
       exit 0
       ;;
-    --verbose | -V) PARALLELY_VERBOSE_OUTPUT=true ;;
-    --no-verbose) PARALLELY_VERBOSE_OUTPUT=false ;;
-    --all-output | -a) PARALLELY_SHOW_ALL_OUTPUT=true ;;
-    --not-all-output) PARALLELY_SHOW_ALL_OUTPUT=false ;;
-    --emoji | -e) PARALLELY_EMOJI_OUTPUT=true ;;
-    --no-emoji | -z) PARALLELY_EMOJI_OUTPUT=false ;;
+    --verbose | -V) PARALLELLY_VERBOSE_OUTPUT=true ;;
+    --no-verbose) PARALLELLY_VERBOSE_OUTPUT=false ;;
+    --all-output | -a) PARALLELLY_SHOW_ALL_OUTPUT=true ;;
+    --not-all-output) PARALLELLY_SHOW_ALL_OUTPUT=false ;;
+    --emoji | -e) PARALLELLY_EMOJI_OUTPUT=true ;;
+    --no-emoji | -z) PARALLELLY_EMOJI_OUTPUT=false ;;
     --color | -c) ENABLE_COLORS=true ;;
     --no-color | -n) ENABLE_COLORS=false ;;
     --light-mode) LIGHT_MODE=true ;;
     --no-light-mode) LIGHT_MODE=false ;;
     --command-output-command | --cc) validate_option_argument "$ARGUMENT" ; SHOW_CMD_OUTPUT_CMD_ARGS='' ; SHOW_CMD_OUTPUT_CMD="$ARGUMENT" ;;
     --command-output-command-args | --cc-args) PARSED_ARGUMENT=true ; SHOW_CMD_OUTPUT_CMD_ARGS="$ARGUMENT" ;;
-    --tmp-dir) PARSED_ARGUMENT=true ; PARALLELY_TMP_DIR="$ARGUMENT" ;;
+    --tmp-dir) PARSED_ARGUMENT=true ; PARALLELLY_TMP_DIR="$ARGUMENT" ;;
     --line-count) SHOW_LINE_COUNT=true ;;
     --no-line-count) SHOW_LINE_COUNT=false ;;
     --byte-count) SHOW_BYTE_COUNT=true ;;
@@ -777,7 +777,7 @@ make_cmd_out_dir() {
     debug "Using existing TMP_DIR_SUFFIX=$TMP_DIR_SUFFIX"
   fi
 
-  CMD_OUT_DIR="$PARALLELY_TMP_DIR/$SCRIPT_NAME-logs$TMP_DIR_SUFFIX"
+  CMD_OUT_DIR="$PARALLELLY_TMP_DIR/$SCRIPT_NAME-logs$TMP_DIR_SUFFIX"
 
   # Erase any existing files
   # Useful when using a fixed base directory like /home/tmp
@@ -788,7 +788,7 @@ make_cmd_out_dir() {
 
   # These are used in case the --tmp-dir argument is passed
   ORIGINAL_CMD_OUT_DIR="$CMD_OUT_DIR"
-  ORIGINAL_TMP_DIR="$PARALLELY_TMP_DIR"
+  ORIGINAL_TMP_DIR="$PARALLELLY_TMP_DIR"
 
   # Create directory
   mkdir -p "$CMD_OUT_DIR"
@@ -913,7 +913,7 @@ if ! [ "$CMD_SHELL" = $NO_CMD_SHELL_INDICATOR ]; then
 fi
 
 NEWLINE_AFTER_EVERY_ERROR=false
-if [ "$PARALLELY_VERBOSE_OUTPUT" = true ]; then
+if [ "$PARALLELLY_VERBOSE_OUTPUT" = true ]; then
   NEWLINE_AFTER_EVERY_ERROR=true
 fi
 
@@ -923,15 +923,15 @@ show_configuration() {
   section Configuration
   log "Environment variables may have been overridden by command line options."
   log
-  log "PARALLELY_VERBOSE_OUTPUT=$PARALLELY_VERBOSE_OUTPUT"
-  log "PARALLELY_SHOW_ALL_OUTPUT=$PARALLELY_SHOW_ALL_OUTPUT"
-  log "PARALLELY_EMOJI_OUTPUT=$PARALLELY_EMOJI_OUTPUT"
+  log "PARALLELLY_VERBOSE_OUTPUT=$PARALLELLY_VERBOSE_OUTPUT"
+  log "PARALLELLY_SHOW_ALL_OUTPUT=$PARALLELLY_SHOW_ALL_OUTPUT"
+  log "PARALLELLY_EMOJI_OUTPUT=$PARALLELLY_EMOJI_OUTPUT"
   log "CMD_SHELL=$CMD_SHELL"
   log "CMD_SHELL_ARGS=$CMD_SHELL_ARGS"
   log "FORCE_SEQUENTIAL=$FORCE_SEQUENTIAL"
   log "SHOW_CMD_OUTPUT_CMD=$SHOW_CMD_OUTPUT_CMD"
   log "SHOW_CMD_OUTPUT_CMD_ARGS=$SHOW_CMD_OUTPUT_CMD_ARGS"
-  log "PARALLELY_TMP_DIR=${PARALLELY_TMP_DIR-(unset! Haven\'t created a tmp dir yet)}"
+  log "PARALLELLY_TMP_DIR=${PARALLELLY_TMP_DIR-(unset! Haven\'t created a tmp dir yet)}"
   log "SHOW_LINE_COUNT=$SHOW_LINE_COUNT"
   log "SHOW_BYTE_COUNT=$SHOW_BYTE_COUNT"
   log "HUMAN_READABLE_BYTE_COUNT=$HUMAN_READABLE_BYTE_COUNT"
@@ -947,7 +947,7 @@ show_configuration() {
   log
 }
 
-if [ "$PARALLELY_VERBOSE_OUTPUT" = true ] || [ "$SHOW_CONFIGURATION" = true ]; then
+if [ "$PARALLELLY_VERBOSE_OUTPUT" = true ] || [ "$SHOW_CONFIGURATION" = true ]; then
   show_configuration
 fi
 
@@ -965,7 +965,7 @@ else
 fi
 
 # Handle the --tmp-dir argument
-if ! [ "$ORIGINAL_TMP_DIR" = "$PARALLELY_TMP_DIR" ]; then
+if ! [ "$ORIGINAL_TMP_DIR" = "$PARALLELLY_TMP_DIR" ]; then
   make_cmd_out_dir
   move_old_cmd_out_dir
   COMMAND_FILE="$CMD_OUT_DIR/$CURRENT_NAME.command"
@@ -1082,7 +1082,7 @@ verbose_section Waiting for commands to finish
 verbose Will list successful and failed commands.
 verbose
 FORCE_LOG=false
-if [ "$PARALLELY_VERBOSE_OUTPUT" != true ] && [ "$PARALLELY_SHOW_ALL_OUTPUT" = true ]; then
+if [ "$PARALLELLY_VERBOSE_OUTPUT" != true ] && [ "$PARALLELLY_SHOW_ALL_OUTPUT" = true ]; then
   FORCE_LOG=true
 fi
 
@@ -1112,7 +1112,7 @@ for PID in $(echo $pids); do
     verbose + "$COMMAND"
     verbose "$STDERR_FILE"
     verbose "$STDOUT_FILE"
-    if [ "$PARALLELY_SHOW_ALL_OUTPUT" = true ]; then
+    if [ "$PARALLELLY_SHOW_ALL_OUTPUT" = true ]; then
       show_output successful STDERR "$NAME" "$STDERR_FILE"
       show_output successful STDOUT "$NAME" "$STDOUT_FILE"
     fi
@@ -1159,4 +1159,4 @@ if [ "$FAILURE" = true ]; then
   exit "$COMMANDS_FAILED_EXIT_CODE"
 fi
 
-# End of parallely script
+# End of parallelly script

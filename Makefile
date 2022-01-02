@@ -1,7 +1,7 @@
 LINUX_SHELLS=dash bash zsh
 STRICT_SHELLS=yash ksh
 MACOS_SHELLS=bash zsh
-SHELLSCRIPT=parallely
+SHELLSCRIPT=parallelly
 TEST_SHELLSCRIPTS=tests/bash-3.1 $(shell ls tests/*.sh)
 ALL_SHELLSCRIPTS=$(TEST_SHELLSCRIPTS) $(SHELLSCRIPT)
 

@@ -1,4 +1,4 @@
-# parallely: Run commands in parallel and capture output. Notify on each completion.
+# parallelly: Run commands in parallel and capture output. Notify on each completion.
 
 <!--
 EDIT README.template.md, not README.md directly.
@@ -26,7 +26,7 @@ Description:
     See examples in section below.
 
 USAGE:
-    parallely -h|--help|-v|--version|<other options> [cmd_name cmd_with_arguments]+
+    parallelly -h|--help|-v|--version|<other options> [cmd_name cmd_with_arguments]+
 
     One or more pairs of cmd_name followed by cmd_with_arguments are expected.
 
@@ -44,14 +44,14 @@ Configuration:
   Use --show-configuration or --verbose to see configuration.
 
   Output configuration:
-    --verbose|-V|--no-verbose or set $PARALLELY_VERBOSE_OUTPUT=true:
+    --verbose|-V|--no-verbose or set $PARALLELLY_VERBOSE_OUTPUT=true:
         Whether to print verbose logs.
         If colors are enabled, logs are colored.
         Default: false or value of $VERBOSE if it is set
-    --all-output|-a|--not-all-output or set $PARALLELY_SHOW_ALL_OUTPUT=true:
+    --all-output|-a|--not-all-output or set $PARALLELLY_SHOW_ALL_OUTPUT=true:
         Whether to print command output for successful commands too.
         Default: false or value of $ALL_OUTPUT if it is set
-    --emoji|-e|--no-emoji|-z or set $PARALLELY_EMOJI_OUTPUT=true:
+    --emoji|-e|--no-emoji|-z or set $PARALLELLY_EMOJI_OUTPUT=true:
         Whether to print emoji.
         Use --no-emoji if you see tofu characters (empty boxes), such as
         '' '' '�' '�'
@@ -77,10 +77,10 @@ Configuration:
     --command-output-command-args|--cc-args or set $SHOW_CMD_OUTPUT_CMD_ARGS:
         Arguments for command for printing stderr and stdout of a command
         Default: -n1
-    --tmp-dir or set $PARALLELY_TMP_DIR:
+    --tmp-dir or set $PARALLELLY_TMP_DIR:
         If you don't have mktemp on your system, you must set this
         option with the environment variable!
-        Note: parallely usually needs a tmp directory to parse its arguments!
+        Note: parallelly usually needs a tmp directory to parse its arguments!
         Alternative: set $MK_TEMP and $MK_TEMP_ARGS
         Default: created using mktemp
     --line-count|--no-line-count or set $SHOW_LINE_COUNT:
@@ -139,50 +139,50 @@ Exit codes:
 Examples:
 
   A command without arguments:
-    parallely list-files ls
+    parallelly list-files ls
 
   Verbose output and a command without arguments:
-    parallely -V list-files ls
-    parallely list-files ls -V
-    parallely list-files -V ls
-    VERBOSE=true parallely list-files ls
-    PARALLELY_VERBOSE_OUTPUT=true parallely list-files ls
+    parallelly -V list-files ls
+    parallelly list-files ls -V
+    parallelly list-files -V ls
+    VERBOSE=true parallelly list-files ls
+    PARALLELLY_VERBOSE_OUTPUT=true parallelly list-files ls
 
   A command with arguments:
-    parallely rsync-src 'rsync -rhP src backup'
+    parallelly rsync-src 'rsync -rhP src backup'
 
   A command with arguments that have spaces in them:
-    parallely printf-abc 'printf "%s %s" abc 123'
+    parallelly printf-abc 'printf "%s %s" abc 123'
 
   Show more or all command output
-    parallely multi-line-output --all-output --cc-args '-n5' 'echo 1; echo 2; echo 3; printf "%s %s" abc 123'
-    parallely multi-line-output --all-output --cc cat --cc-args '' 'echo 1; echo 2; echo 3; printf "%s %s" abc 123'
+    parallelly multi-line-output --all-output --cc-args '-n5' 'echo 1; echo 2; echo 3; printf "%s %s" abc 123'
+    parallelly multi-line-output --all-output --cc cat --cc-args '' 'echo 1; echo 2; echo 3; printf "%s %s" abc 123'
 
   Shell commands:
-    parallely test-exit 'echo failure && exit 1'
-    parallely test-statement 'if true; then echo 1; fi'
+    parallelly test-exit 'echo failure && exit 1'
+    parallelly test-statement 'if true; then echo 1; fi'
 
     Commands are run in the sh by default shell with: sh -c "$COMMAND"
 
   Commands are waited one at a time in order:
     This means that you should list the fast commands first.
-    VERBOSE=true parallely 1 'sleep 0.1' 2 'sleep 1' 3 'sleep 2'
+    VERBOSE=true parallelly 1 'sleep 0.1' 2 'sleep 1' 3 'sleep 2'
 
     Or else, it'll take a bit longer to see successful outputs.
-    VERBOSE=true parallely 3 'sleep 2' 2 'sleep 1' 1 'sleep 0.1'
+    VERBOSE=true parallelly 3 'sleep 2' 2 'sleep 1' 1 'sleep 0.1'
 
     Regardless, you are notified as soon as a command finishes.
-    VERBOSE=true CLI_NOTIFY=true parallely 3 'sleep 2' 2 'sleep 1' 1 'sleep 0.1'
+    VERBOSE=true CLI_NOTIFY=true parallelly 3 'sleep 2' 2 'sleep 1' 1 'sleep 0.1'
 
   Multiple commands:
-    parallely fail 'echo failure && exit 1' \
+    parallelly fail 'echo failure && exit 1' \
       fail-printf-nonewline 'printf "%s %s"\ abc 123 ; false' \
       fail-rsync-src 'rsync -rhP nonexistentdir backup' \
       delay 'sleep 0.2' \
       ok-and-output 'echo test ; echo stderr test >&2' \
       fail-slower-delay '! sleep 0.4' \
       fail-no-output 'exit 210' \
-      lots-of-output 'cat $(which parallely)' \
+      lots-of-output 'cat $(which parallelly)' \
       'long name for command with spaces' 'true && echo ok'
 
     The odd numbered arguments are short, filesafe names for each command.
@@ -197,35 +197,35 @@ Version: 1.9.3
 
 ### Option 1:
 
-1. Download [raw.githubusercontent.com/roguh/parallely/main/parallely](https://raw.githubusercontent.com/roguh/parallely/main/parallely).
+1. Download [raw.githubusercontent.com/roguh/parallelly/main/parallelly](https://raw.githubusercontent.com/roguh/parallelly/main/parallelly).
 2. Make executable and move to your preferred binary location.
 
 ```
-chmod +x parallely
-sudo cp parallely /usr/bin/parallely
+chmod +x parallelly
+sudo cp parallelly /usr/bin/parallelly
 ```
 
 ### Option 2:
 
 ```
-git clone https://github.com/roguh/parallely.git
-cd parallely
+git clone https://github.com/roguh/parallelly.git
+cd parallelly
 make install
 ```
 
 OR
 
 ```
-git clone https://github.com/roguh/parallely.git
-cd parallely
+git clone https://github.com/roguh/parallelly.git
+cd parallelly
 make install-to-user
 ```
 
 OR
 
 ```
-git clone https://github.com/roguh/parallely.git
-cd parallely
+git clone https://github.com/roguh/parallelly.git
+cd parallelly
 make install-symlink-to-user
 ```
 
@@ -233,7 +233,7 @@ make install-symlink-to-user
 ## Integration Testing
 
 If the test script fails, the tests have failed.
-Also read the output to determine if `parallely` is behaving correctly.
+Also read the output to determine if `parallelly` is behaving correctly.
 
 Note the `test-integration-all-shells.sh` script runs the `test-integration.sh` script using the test shell itself.
 
@@ -307,14 +307,14 @@ make check
 
 ## Demos
 
-The parallely commands start with a `$ ` to indicate it is a command typed into the shell.
+The parallelly commands start with a `$ ` to indicate it is a command typed into the shell.
 The rest of the code is the output of the command.
 
 
 ### Demo 1: basic usage
 
 
-Parallely runs multiple commands in parallel and captures their output.
+Parallelly runs multiple commands in parallel and captures their output.
 You pass it pairs of arguments: a name for the command and the command itself.
 
 Failing command output is summarized with `tail -n1` and a list of
@@ -327,22 +327,22 @@ Some of the commands that were run are indicated by a leading `+ `, such as `+ t
 Notice that command output is save in a temporary directory.
 
 ```
-$ parallely \
+$ parallelly \
     long-running 'echo OK >&2 && sleep 0.25' \
-    lots-of-output 'cat $(which parallely)' \
+    lots-of-output 'cat $(which parallelly)' \
     failing 'echo ERROR ; exit 1'
-parallely will run 3 commands in parallel 
+parallelly will run 3 commands in parallel 
 ============= Failed command output =============
 ERROR Failure in command failing after 0.0 seconds.
 + echo ERROR ; exit 1
-/tmp/demo-tmp-dir-24e84ee24f/parallely-logs/failing.stderr
-/tmp/demo-tmp-dir-24e84ee24f/parallely-logs/failing.stdout
+/tmp/demo-tmp-dir-24e84ee24f/parallelly-logs/failing.stderr
+/tmp/demo-tmp-dir-24e84ee24f/parallelly-logs/failing.stdout
 STDERR output for failed command failing: (no output)
 STDOUT output for failed command failing: 6 bytes 1 line
-+ tail -n1 /tmp/demo-tmp-dir-24e84ee24f/parallely-logs/failing.stdout
++ tail -n1 /tmp/demo-tmp-dir-24e84ee24f/parallelly-logs/failing.stdout
 ERROR
 3 commands finished in 0.3 seconds.
-ERROR 1/3 command failed: failing 
+ERROR 1 command failed: failing 
 
 ```
 
@@ -352,7 +352,7 @@ ERROR 1/3 command failed: failing
 Here, we're going to run ten sleep 0.1 commands in parallel and then sequentially to compare the runtime.
 
 ```
-$ parallely \
+$ parallelly \
     sleep1 'sleep 0.1' \
     sleep2 'sleep 0.1' \
     sleep3 'sleep 0.1' \
@@ -363,11 +363,11 @@ $ parallely \
     sleep8 'sleep 0.1' \
     sleep9 'sleep 0.1' \
     sleep0 'sleep 0.1'
-parallely will run 10 commands in parallel 
+parallelly will run 10 commands in parallel 
 10 commands finished in 0.1 seconds.
 + echo
 
-$ parallely \
+$ parallelly \
     --sequential sleep1 'sleep 0.1' \
     sleep2 'sleep 0.1' \
     sleep3 'sleep 0.1' \
@@ -378,7 +378,7 @@ $ parallely \
     sleep8 'sleep 0.1' \
     sleep9 'sleep 0.1' \
     sleep0 'sleep 0.1'
-parallely will run 10 commands sequentially 
+parallelly will run 10 commands sequentially 
 FORCE_SEQUENTIAL is set: Waiting for command sleep1 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep2 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep3 to finish
@@ -389,7 +389,7 @@ FORCE_SEQUENTIAL is set: Waiting for command sleep7 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep8 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep9 to finish
 FORCE_SEQUENTIAL is set: Waiting for command sleep0 to finish
-10 commands finished in 1.5 seconds.
+10 commands finished in 1.7 seconds.
 
 ```
 
@@ -399,41 +399,41 @@ FORCE_SEQUENTIAL is set: Waiting for command sleep0 to finish
 Use `-a` to show output for successful commands as well.
 
 ```
-$ parallely \
+$ parallelly \
     -a long-running 'echo OK >&2 && sleep 0.25' \
-    lots-of-output 'cat $(which parallely)' \
+    lots-of-output 'cat $(which parallelly)' \
     failing 'echo ERROR ; exit 1'
-parallely will run 3 commands in parallel 
+parallelly will run 3 commands in parallel 
 ============= Successful command(s) =============
 Command long-running succeeded in 0.2 seconds.
 + echo OK >&2 && sleep 0.25
-/tmp/demo-tmp-dir-ca128f1014/parallely-logs/long-running.stderr
-/tmp/demo-tmp-dir-ca128f1014/parallely-logs/long-running.stdout
+/tmp/demo-tmp-dir-ca128f1014/parallelly-logs/long-running.stderr
+/tmp/demo-tmp-dir-ca128f1014/parallelly-logs/long-running.stdout
 STDERR output for successful command long-running: 3 bytes 1 line
-+ tail -n1 /tmp/demo-tmp-dir-ca128f1014/parallely-logs/long-running.stderr
++ tail -n1 /tmp/demo-tmp-dir-ca128f1014/parallelly-logs/long-running.stderr
 OK
 STDOUT output for successful command long-running: (no output)
 
 Command lots-of-output succeeded in 0.0 seconds.
-+ cat $(which parallely)
-/tmp/demo-tmp-dir-ca128f1014/parallely-logs/lots-of-output.stderr
-/tmp/demo-tmp-dir-ca128f1014/parallely-logs/lots-of-output.stdout
++ cat $(which parallelly)
+/tmp/demo-tmp-dir-ca128f1014/parallelly-logs/lots-of-output.stderr
+/tmp/demo-tmp-dir-ca128f1014/parallelly-logs/lots-of-output.stdout
 STDERR output for successful command lots-of-output: (no output)
-STDOUT output for successful command lots-of-output: 36.77 KiBs 1162 lines
-+ tail -n1 /tmp/demo-tmp-dir-ca128f1014/parallely-logs/lots-of-output.stdout
-# End of parallely script
+STDOUT output for successful command lots-of-output: 36.82 KiBs 1162 lines
++ tail -n1 /tmp/demo-tmp-dir-ca128f1014/parallelly-logs/lots-of-output.stdout
+# End of parallelly script
 
 ============= Failed command output =============
 ERROR Failure in command failing after 0.0 seconds.
 + echo ERROR ; exit 1
-/tmp/demo-tmp-dir-ca128f1014/parallely-logs/failing.stderr
-/tmp/demo-tmp-dir-ca128f1014/parallely-logs/failing.stdout
+/tmp/demo-tmp-dir-ca128f1014/parallelly-logs/failing.stderr
+/tmp/demo-tmp-dir-ca128f1014/parallelly-logs/failing.stdout
 STDERR output for failed command failing: (no output)
 STDOUT output for failed command failing: 6 bytes 1 line
-+ tail -n1 /tmp/demo-tmp-dir-ca128f1014/parallely-logs/failing.stdout
++ tail -n1 /tmp/demo-tmp-dir-ca128f1014/parallelly-logs/failing.stdout
 ERROR
 3 commands finished in 0.3 seconds.
-ERROR 1/3 command failed: failing 
+ERROR 1 command failed: failing 
 
 ```
 
@@ -449,23 +449,23 @@ You can use `tail -f <OUTPUT FILE>` to see the output of a long-lived command.
 Look for "Starting " and "See output at:" near the top of the logs
 
 ```
-$ parallely \
+$ parallelly \
     -V -a long-running 'echo OK >&2 && sleep 0.25' \
-    lots-of-output 'cat $(which parallely)' \
+    lots-of-output 'cat $(which parallelly)' \
     failing 'echo ERROR ; exit 1'
-Created tmp directory at /tmp/demo-tmp-dir-86b09d2f5f/parallely-logs
+Created tmp directory at /tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs
 ============= Configuration =============
 Environment variables may have been overridden by command line options.
 
-PARALLELY_VERBOSE_OUTPUT=true
-PARALLELY_SHOW_ALL_OUTPUT=true
-PARALLELY_EMOJI_OUTPUT=false
+PARALLELLY_VERBOSE_OUTPUT=true
+PARALLELLY_SHOW_ALL_OUTPUT=true
+PARALLELLY_EMOJI_OUTPUT=false
 CMD_SHELL=sh
 CMD_SHELL_ARGS=-c
 FORCE_SEQUENTIAL=false
 SHOW_CMD_OUTPUT_CMD=tail
 SHOW_CMD_OUTPUT_CMD_ARGS=-n1
-PARALLELY_TMP_DIR=/tmp/demo-tmp-dir-86b09d2f5f
+PARALLELLY_TMP_DIR=/tmp/demo-tmp-dir-86b09d2f5f
 SHOW_LINE_COUNT=true
 SHOW_BYTE_COUNT=true
 HUMAN_READABLE_BYTE_COUNT=true
@@ -477,25 +477,25 @@ ENABLE_COLORS=false
 LIGHT_MODE=false
 SHOW_CONFIGURATION=false
 SHOW_PIDS=false
-Temporary directory CMD_OUT_DIR=/tmp/demo-tmp-dir-86b09d2f5f/parallely-logs
+Temporary directory CMD_OUT_DIR=/tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs
 
-parallely will run 3 commands in parallel 
+parallelly will run 3 commands in parallel 
 ============= Starting commands =============
 Starting long-running command 1/3
 + sh -c echo OK >&2 && sleep 0.25
 See output at:
-/tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/long-running.stderr
-/tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/long-running.stdout
+/tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/long-running.stderr
+/tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/long-running.stdout
 Starting lots-of-output command 2/3
-+ sh -c cat $(which parallely)
++ sh -c cat $(which parallelly)
 See output at:
-/tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/lots-of-output.stderr
-/tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/lots-of-output.stdout
+/tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/lots-of-output.stderr
+/tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/lots-of-output.stdout
 Starting failing command 3/3
 + sh -c echo ERROR ; exit 1
 See output at:
-/tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/failing.stderr
-/tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/failing.stdout
+/tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/failing.stderr
+/tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/failing.stdout
 
 ============= Waiting for commands to finish =============
 Will list successful and failed commands.
@@ -503,36 +503,36 @@ Will list successful and failed commands.
 ============= Successful command(s) =============
 Command long-running succeeded in 0.2 seconds.
 + echo OK >&2 && sleep 0.25
-/tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/long-running.stderr
-/tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/long-running.stdout
+/tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/long-running.stderr
+/tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/long-running.stdout
 STDERR output for successful command long-running: 3 bytes 1 line
-+ tail -n1 /tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/long-running.stderr
++ tail -n1 /tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/long-running.stderr
 OK
 STDOUT output for successful command long-running: (no output)
 
 Command lots-of-output succeeded in 0.0 seconds.
-+ cat $(which parallely)
-/tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/lots-of-output.stderr
-/tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/lots-of-output.stdout
++ cat $(which parallelly)
+/tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/lots-of-output.stderr
+/tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/lots-of-output.stdout
 STDERR output for successful command lots-of-output: (no output)
-STDOUT output for successful command lots-of-output: 36.77 KiBs 1162 lines
-+ tail -n1 /tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/lots-of-output.stdout
-# End of parallely script
+STDOUT output for successful command lots-of-output: 36.82 KiBs 1162 lines
++ tail -n1 /tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/lots-of-output.stdout
+# End of parallelly script
 
 ============= Failed command output =============
 ERROR Failure in command failing after 0.0 seconds.
 + echo ERROR ; exit 1
-/tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/failing.stderr
-/tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/failing.stdout
+/tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/failing.stderr
+/tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/failing.stdout
 STDERR output for failed command failing: (no output)
 STDOUT output for failed command failing: 6 bytes 1 line
-+ tail -n1 /tmp/demo-tmp-dir-86b09d2f5f/parallely-logs/failing.stdout
++ tail -n1 /tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/failing.stdout
 ERROR
 
 ============= SUMMARY =============
 2 commands succeeded
 3 commands finished in 0.3 seconds.
-ERROR 1/3 command failed: failing 
+ERROR 1 command failed: failing 
 
 ```
 
@@ -546,34 +546,34 @@ You can use `cat` to show all output or `tail -n10` to show the last 10 lines.
 By default, only the last line of output is shown.
 
 ```
-$ parallely \
+$ parallelly \
     -a onlylastline 'printf "a\nb\nc\nd\ne"'
-parallely will run 1 commands in parallel 
+parallelly will run 1 commands in parallel 
 ============= Successful command(s) =============
 Command onlylastline succeeded in 0.0 seconds.
 + printf "a\nb\nc\nd\ne"
-/tmp/demo-tmp-dir-71ab5eeb4a/parallely-logs/onlylastline.stderr
-/tmp/demo-tmp-dir-71ab5eeb4a/parallely-logs/onlylastline.stdout
+/tmp/demo-tmp-dir-71ab5eeb4a/parallelly-logs/onlylastline.stderr
+/tmp/demo-tmp-dir-71ab5eeb4a/parallelly-logs/onlylastline.stdout
 STDERR output for successful command onlylastline: (no output)
 STDOUT output for successful command onlylastline: 9 bytes 4 lines
-+ tail -n1 /tmp/demo-tmp-dir-71ab5eeb4a/parallely-logs/onlylastline.stdout
++ tail -n1 /tmp/demo-tmp-dir-71ab5eeb4a/parallelly-logs/onlylastline.stdout
 e
 (no newline at end of output)
 
 1 command finished in 0.0 seconds.
 + echo
 
-$ parallely \
+$ parallelly \
     --cc-args -n3 -a last3lines 'printf "a\nb\nc\nd\ne"'
-parallely will run 1 commands in parallel 
+parallelly will run 1 commands in parallel 
 ============= Successful command(s) =============
 Command last3lines succeeded in 0.0 seconds.
 + printf "a\nb\nc\nd\ne"
-/tmp/demo-tmp-dir-71ab5eeb4a/parallely-logs/last3lines.stderr
-/tmp/demo-tmp-dir-71ab5eeb4a/parallely-logs/last3lines.stdout
+/tmp/demo-tmp-dir-71ab5eeb4a/parallelly-logs/last3lines.stderr
+/tmp/demo-tmp-dir-71ab5eeb4a/parallelly-logs/last3lines.stdout
 STDERR output for successful command last3lines: (no output)
 STDOUT output for successful command last3lines: 9 bytes 4 lines
-+ tail -n3 /tmp/demo-tmp-dir-71ab5eeb4a/parallely-logs/last3lines.stdout
++ tail -n3 /tmp/demo-tmp-dir-71ab5eeb4a/parallelly-logs/last3lines.stdout
 c
 d
 e
@@ -582,17 +582,17 @@ e
 1 command finished in 0.0 seconds.
 + echo
 
-$ parallely \
+$ parallelly \
     --cc cat -a last3lines 'printf "a\nb\nc\nd\ne"'
-parallely will run 1 commands in parallel 
+parallelly will run 1 commands in parallel 
 ============= Successful command(s) =============
 Command last3lines succeeded in 0.0 seconds.
 + printf "a\nb\nc\nd\ne"
-/tmp/demo-tmp-dir-71ab5eeb4a/parallely-logs/last3lines.stderr
-/tmp/demo-tmp-dir-71ab5eeb4a/parallely-logs/last3lines.stdout
+/tmp/demo-tmp-dir-71ab5eeb4a/parallelly-logs/last3lines.stderr
+/tmp/demo-tmp-dir-71ab5eeb4a/parallelly-logs/last3lines.stdout
 STDERR output for successful command last3lines: (no output)
 STDOUT output for successful command last3lines: 9 bytes 4 lines
-+ cat  /tmp/demo-tmp-dir-71ab5eeb4a/parallely-logs/last3lines.stdout
++ cat  /tmp/demo-tmp-dir-71ab5eeb4a/parallelly-logs/last3lines.stdout
 a
 b
 c
@@ -607,90 +607,90 @@ e
 ### Demo 6: no emoji and no colors
 
 
-Parallely prints emoji and colors when it seems they could be supported.
+Parallelly prints emoji and colors when it seems they could be supported.
 To turn them off, use `--no-color` and `--no-emoji`.
 
 ```
-$ parallely \
+$ parallelly \
     --no-color --no-emoji -a long-running 'echo OK >&2 && sleep 0.25' \
-    lots-of-output 'cat $(which parallely)' \
+    lots-of-output 'cat $(which parallelly)' \
     failing 'echo ERROR ; exit 1'
-parallely will run 3 commands in parallel 
+parallelly will run 3 commands in parallel 
 ============= Successful command(s) =============
 Command long-running succeeded in 0.2 seconds.
 + echo OK >&2 && sleep 0.25
-/tmp/demo-tmp-dir-865db193fd/parallely-logs/long-running.stderr
-/tmp/demo-tmp-dir-865db193fd/parallely-logs/long-running.stdout
+/tmp/demo-tmp-dir-865db193fd/parallelly-logs/long-running.stderr
+/tmp/demo-tmp-dir-865db193fd/parallelly-logs/long-running.stdout
 STDERR output for successful command long-running: 3 bytes 1 line
-+ tail -n1 /tmp/demo-tmp-dir-865db193fd/parallely-logs/long-running.stderr
++ tail -n1 /tmp/demo-tmp-dir-865db193fd/parallelly-logs/long-running.stderr
 OK
 STDOUT output for successful command long-running: (no output)
 
 Command lots-of-output succeeded in 0.0 seconds.
-+ cat $(which parallely)
-/tmp/demo-tmp-dir-865db193fd/parallely-logs/lots-of-output.stderr
-/tmp/demo-tmp-dir-865db193fd/parallely-logs/lots-of-output.stdout
++ cat $(which parallelly)
+/tmp/demo-tmp-dir-865db193fd/parallelly-logs/lots-of-output.stderr
+/tmp/demo-tmp-dir-865db193fd/parallelly-logs/lots-of-output.stdout
 STDERR output for successful command lots-of-output: (no output)
-STDOUT output for successful command lots-of-output: 36.77 KiBs 1162 lines
-+ tail -n1 /tmp/demo-tmp-dir-865db193fd/parallely-logs/lots-of-output.stdout
-# End of parallely script
+STDOUT output for successful command lots-of-output: 36.82 KiBs 1162 lines
++ tail -n1 /tmp/demo-tmp-dir-865db193fd/parallelly-logs/lots-of-output.stdout
+# End of parallelly script
 
 ============= Failed command output =============
 ERROR Failure in command failing after 0.0 seconds.
 + echo ERROR ; exit 1
-/tmp/demo-tmp-dir-865db193fd/parallely-logs/failing.stderr
-/tmp/demo-tmp-dir-865db193fd/parallely-logs/failing.stdout
+/tmp/demo-tmp-dir-865db193fd/parallelly-logs/failing.stderr
+/tmp/demo-tmp-dir-865db193fd/parallelly-logs/failing.stdout
 STDERR output for failed command failing: (no output)
 STDOUT output for failed command failing: 6 bytes 1 line
-+ tail -n1 /tmp/demo-tmp-dir-865db193fd/parallely-logs/failing.stdout
++ tail -n1 /tmp/demo-tmp-dir-865db193fd/parallelly-logs/failing.stdout
 ERROR
 3 commands finished in 0.3 seconds.
-ERROR 1/3 command failed: failing 
+ERROR 1 command failed: failing 
 
 ```
 
 ### Demo 7: sequential mode
 
 
-Parallely supports `--sequential or -s` to run commands sequentially instead of in parallel.
+Parallelly supports `--sequential or -s` to run commands sequentially instead of in parallel.
 This is useful for testing and comparison purposes.
 Also, you can use this mode to just capture output and notify on completion.
 
 ```
-$ parallely \
+$ parallelly \
     --sequential -a long-running 'echo OK >&2 && sleep 0.25' \
-    lots-of-output 'cat $(which parallely)' \
+    lots-of-output 'cat $(which parallelly)' \
     failing 'echo ERROR ; exit 1'
-parallely will run 3 commands sequentially 
+parallelly will run 3 commands sequentially 
 FORCE_SEQUENTIAL is set: Waiting for command long-running to finish
 FORCE_SEQUENTIAL is set: Waiting for command lots-of-output to finish
 FORCE_SEQUENTIAL is set: Waiting for command failing to finish
 ============= Successful command(s) =============
 Command long-running succeeded in 0.2 seconds.
 + echo OK >&2 && sleep 0.25
-/tmp/demo-tmp-dir-9c3727b652/parallely-logs/long-running.stderr
-/tmp/demo-tmp-dir-9c3727b652/parallely-logs/long-running.stdout
+/tmp/demo-tmp-dir-9c3727b652/parallelly-logs/long-running.stderr
+/tmp/demo-tmp-dir-9c3727b652/parallelly-logs/long-running.stdout
 STDERR output for successful command long-running: 3 bytes 1 line
-+ tail -n1 /tmp/demo-tmp-dir-9c3727b652/parallely-logs/long-running.stderr
++ tail -n1 /tmp/demo-tmp-dir-9c3727b652/parallelly-logs/long-running.stderr
 OK
 STDOUT output for successful command long-running: (no output)
 
 Command lots-of-output succeeded in 0.0 seconds.
-+ cat $(which parallely)
-/tmp/demo-tmp-dir-9c3727b652/parallely-logs/lots-of-output.stderr
-/tmp/demo-tmp-dir-9c3727b652/parallely-logs/lots-of-output.stdout
++ cat $(which parallelly)
+/tmp/demo-tmp-dir-9c3727b652/parallelly-logs/lots-of-output.stderr
+/tmp/demo-tmp-dir-9c3727b652/parallelly-logs/lots-of-output.stdout
 STDERR output for successful command lots-of-output: (no output)
-STDOUT output for successful command lots-of-output: 36.77 KiBs 1162 lines
-+ tail -n1 /tmp/demo-tmp-dir-9c3727b652/parallely-logs/lots-of-output.stdout
-# End of parallely script
+STDOUT output for successful command lots-of-output: 36.82 KiBs 1162 lines
++ tail -n1 /tmp/demo-tmp-dir-9c3727b652/parallelly-logs/lots-of-output.stdout
+# End of parallelly script
 
 Command failing succeeded in 0.0 seconds.
 + echo ERROR ; exit 1
-/tmp/demo-tmp-dir-9c3727b652/parallely-logs/failing.stderr
-/tmp/demo-tmp-dir-9c3727b652/parallely-logs/failing.stdout
+/tmp/demo-tmp-dir-9c3727b652/parallelly-logs/failing.stderr
+/tmp/demo-tmp-dir-9c3727b652/parallelly-logs/failing.stdout
 STDERR output for successful command failing: (no output)
 STDOUT output for successful command failing: 6 bytes 1 line
-+ tail -n1 /tmp/demo-tmp-dir-9c3727b652/parallely-logs/failing.stdout
++ tail -n1 /tmp/demo-tmp-dir-9c3727b652/parallelly-logs/failing.stdout
 ERROR
 
 3 commands finished in 0.4 seconds.
@@ -703,21 +703,21 @@ ERROR
 You can show the configuration, the version, or debug information easily.
 
 ```
-$ parallely --trace  # Very noisy!
-$ parallely \
+$ parallelly --trace  # Very noisy!
+$ parallelly \
     --show-configuration
 ============= Configuration =============
 Environment variables may have been overridden by command line options.
 
-PARALLELY_VERBOSE_OUTPUT=false
-PARALLELY_SHOW_ALL_OUTPUT=false
-PARALLELY_EMOJI_OUTPUT=false
+PARALLELLY_VERBOSE_OUTPUT=false
+PARALLELLY_SHOW_ALL_OUTPUT=false
+PARALLELLY_EMOJI_OUTPUT=false
 CMD_SHELL=sh
 CMD_SHELL_ARGS=-c
 FORCE_SEQUENTIAL=false
 SHOW_CMD_OUTPUT_CMD=tail
 SHOW_CMD_OUTPUT_CMD_ARGS=-n1
-PARALLELY_TMP_DIR=/tmp/demo-tmp-dir-8836bf85cb
+PARALLELLY_TMP_DIR=/tmp/demo-tmp-dir-8836bf85cb
 SHOW_LINE_COUNT=true
 SHOW_BYTE_COUNT=true
 HUMAN_READABLE_BYTE_COUNT=true
@@ -731,20 +731,20 @@ SHOW_CONFIGURATION=true
 SHOW_PIDS=false
 Temporary directory CMD_OUT_DIR=(unset!)
 
-$ parallely \
+$ parallelly \
     --no-emoji --light-mode --shell-command zsh --cc-args -n10 --show-configuration
 ============= Configuration =============
 Environment variables may have been overridden by command line options.
 
-PARALLELY_VERBOSE_OUTPUT=false
-PARALLELY_SHOW_ALL_OUTPUT=false
-PARALLELY_EMOJI_OUTPUT=false
+PARALLELLY_VERBOSE_OUTPUT=false
+PARALLELLY_SHOW_ALL_OUTPUT=false
+PARALLELLY_EMOJI_OUTPUT=false
 CMD_SHELL=zsh
 CMD_SHELL_ARGS=-c
 FORCE_SEQUENTIAL=false
 SHOW_CMD_OUTPUT_CMD=tail
 SHOW_CMD_OUTPUT_CMD_ARGS=-n10
-PARALLELY_TMP_DIR=/tmp/demo-tmp-dir-8836bf85cb
+PARALLELLY_TMP_DIR=/tmp/demo-tmp-dir-8836bf85cb
 SHOW_LINE_COUNT=true
 SHOW_BYTE_COUNT=true
 HUMAN_READABLE_BYTE_COUNT=true
@@ -758,10 +758,10 @@ SHOW_CONFIGURATION=true
 SHOW_PIDS=false
 Temporary directory CMD_OUT_DIR=(unset!)
 
-$ parallely \
+$ parallelly \
     --version
 1.9.3
-$ parallely \
+$ parallelly \
     --debug
 DEBUG: arglog: Remaining (0)
 DEBUG: PPID=<omitted>

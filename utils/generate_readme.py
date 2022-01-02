@@ -11,7 +11,7 @@ from typing import List, Union, Tuple, Iterable, Dict, Coroutine, TypeVar
 import sys
 
 
-SCRIPT_NAME = "parallely"
+SCRIPT_NAME = "parallelly"
 HELP_MARKER = "<HELP_STRING>"
 HELP_STRING_CMD = f"{SCRIPT_NAME} -h"
 
@@ -52,7 +52,7 @@ T = TypeVar("T")
 def mk_env(demo_name_hash: str) -> Dict[str, str]:
     return BASE_DEMO_ENV | {
         # Deterministic tmp dir unique for every demo
-        "PARALLELY_TMP_DIR": f"/tmp/demo-tmp-dir-{demo_name_hash}",
+        "PARALLELLY_TMP_DIR": f"/tmp/demo-tmp-dir-{demo_name_hash}",
     }
 
 

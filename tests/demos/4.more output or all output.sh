@@ -8,8 +8,8 @@ echo By default, only the last line of output is shown.
 echo
 echo BEGIN_CODE
 set -x 
-parallely -a onlylastline 'printf "a\nb\nc\nd\ne"'
+parallelly -a onlylastline 'printf "a\nb\nc\nd\ne"'
 echo
-parallely --cc-args -n3 -a last3lines 'printf "a\nb\nc\nd\ne"'
+parallelly --cc-args -n3 -a last3lines 'printf "a\nb\nc\nd\ne"'
 echo
-parallely --cc cat -a last3lines 'printf "a\nb\nc\nd\ne"'
+parallelly --cc cat -a last3lines 'printf "a\nb\nc\nd\ne"'

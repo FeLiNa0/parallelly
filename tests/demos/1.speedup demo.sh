@@ -4,7 +4,7 @@ echo "Here, we're going to run ten sleep 0.1 commands in parallel and then seque
 echo
 echo BEGIN_CODE
 set -x
-parallely sleep1 'sleep 0.1' \
+parallelly sleep1 'sleep 0.1' \
   sleep2 'sleep 0.1' \
   sleep3 'sleep 0.1' \
   sleep4 'sleep 0.1' \
@@ -15,7 +15,7 @@ parallely sleep1 'sleep 0.1' \
   sleep9 'sleep 0.1' \
   sleep0 'sleep 0.1'
 echo
-parallely --sequential sleep1 'sleep 0.1' \
+parallelly --sequential sleep1 'sleep 0.1' \
   sleep2 'sleep 0.1' \
   sleep3 'sleep 0.1' \
   sleep4 'sleep 0.1' \

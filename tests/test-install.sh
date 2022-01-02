@@ -1,5 +1,5 @@
 #!/bin/sh
-COMMAND=parallely
+COMMAND=parallelly
 if ! [ -f "$1/$COMMAND" ]; then
   echo Command "$COMMAND" not found in directory "$1"
   exit 1

@@ -1,4 +1,4 @@
-# parallely: Run commands in parallel and capture output. Notify on each completion.
+# parallelly: Run commands in parallel and capture output. Notify on each completion.
 
 <!--
 EDIT README.template.md, not README.md directly.
@@ -19,35 +19,35 @@ See [demos at bottom of document](#demos) for examples with output.
 
 ### Option 1:
 
-1. Download [raw.githubusercontent.com/roguh/parallely/main/parallely](https://raw.githubusercontent.com/roguh/parallely/main/parallely).
+1. Download [raw.githubusercontent.com/roguh/parallelly/main/parallelly](https://raw.githubusercontent.com/roguh/parallelly/main/parallelly).
 2. Make executable and move to your preferred binary location.
 
 ```
-chmod +x parallely
-sudo cp parallely /usr/bin/parallely
+chmod +x parallelly
+sudo cp parallelly /usr/bin/parallelly
 ```
 
 ### Option 2:
 
 ```
-git clone https://github.com/roguh/parallely.git
-cd parallely
+git clone https://github.com/roguh/parallelly.git
+cd parallelly
 make install
 ```
 
 OR
 
 ```
-git clone https://github.com/roguh/parallely.git
-cd parallely
+git clone https://github.com/roguh/parallelly.git
+cd parallelly
 make install-to-user
 ```
 
 OR
 
 ```
-git clone https://github.com/roguh/parallely.git
-cd parallely
+git clone https://github.com/roguh/parallelly.git
+cd parallelly
 make install-symlink-to-user
 ```
 
@@ -55,7 +55,7 @@ make install-symlink-to-user
 ## Integration Testing
 
 If the test script fails, the tests have failed.
-Also read the output to determine if `parallely` is behaving correctly.
+Also read the output to determine if `parallelly` is behaving correctly.
 
 Note the `test-integration-all-shells.sh` script runs the `test-integration.sh` script using the test shell itself.
 
@@ -129,7 +129,7 @@ make check
 
 ## Demos
 
-The parallely commands start with a `$ ` to indicate it is a command typed into the shell.
+The parallelly commands start with a `$ ` to indicate it is a command typed into the shell.
 The rest of the code is the output of the command.
 
 <DEMO_OUTPUT>

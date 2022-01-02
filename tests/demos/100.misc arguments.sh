@@ -3,9 +3,9 @@ set -eu
 echo You can show the configuration, the version, or debug information easily.
 echo
 echo BEGIN_CODE
-echo "$ parallely --trace  # Very noisy!"
+echo "$ parallelly --trace  # Very noisy!"
 set -x
-parallely --show-configuration
-parallely --no-emoji --light-mode --shell-command zsh --cc-args -n10 --show-configuration
-parallely --version
-parallely --debug
+parallelly --show-configuration
+parallelly --no-emoji --light-mode --shell-command zsh --cc-args -n10 --show-configuration
+parallelly --version
+parallelly --debug

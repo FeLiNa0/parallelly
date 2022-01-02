@@ -1,6 +1,6 @@
 #!/bin/sh
 set -eu
-echo Parallely runs multiple commands in parallel and captures their output.
+echo Parallelly runs multiple commands in parallel and captures their output.
 echo You pass it pairs of arguments: a name for the command and the command itself.
 echo
 echo Failing command output is summarized with \`tail -n1\` and a list of
@@ -14,4 +14,4 @@ echo Notice that command output is save in a temporary directory.
 echo
 echo BEGIN_CODE
 set -x
-parallely long-running 'echo OK >&2 && sleep 0.25' lots-of-output 'cat $(which parallely)' failing 'echo ERROR ; exit 1'
+parallelly long-running 'echo OK >&2 && sleep 0.25' lots-of-output 'cat $(which parallelly)' failing 'echo ERROR ; exit 1'

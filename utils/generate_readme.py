@@ -11,6 +11,7 @@ from typing import List, Union, Tuple, Iterable, Dict, Coroutine, TypeVar
 import sys
 
 
+DEBUG = False
 SCRIPT_NAME = "parallelly"
 HELP_MARKER = "<HELP_STRING>"
 HELP_STRING_CMD = f"{SCRIPT_NAME} -h"
@@ -64,6 +65,9 @@ def log(*args, **kwargs):
 def warn(*args, **kwargs):
     log("WARNING", *args, **kwargs)
 
+def debug(*args, **kwargs):
+    if DEBUG:
+        log("DEBUG", *args, **kwargs)
 
 def fail(*args, **kwargs):
     log("FAILURE", *args, **kwargs)
@@ -165,6 +169,7 @@ async def get_demo_output(
         outputs.append("```\n")
     outputs += output
     outputs.append("```")
+    debug(outputs)
     return demo_index, outputs
 
 

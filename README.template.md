@@ -51,44 +51,11 @@ cd parallelly
 make install-symlink-to-user
 ```
 
-<!-- TODO
-## Integration Testing
+## Tests
 
-If the test script fails, the tests have failed.
-Also read the output to determine if `parallelly` is behaving correctly.
+Run `make build-readme` to run various tests.
 
-Note the `test-integration-all-shells.sh` script runs the `test-integration.sh` script using the test shell itself.
-
-### Linux: Running tests for many shells at once
-
-```
-make test-on-linux
-```
-
-### MacOS: Running tests for many shells at once
-
-```
-make test-on-macos
-```
-
-### Running tests for stricter POSIX shells
-
-```
-make test-on-strict-posix-shells
-```
-
-### Running tests one shell at a time
-
-Run the following commands:
-
-```
-./tests/test-integration.sh sh
-./tests/test-integration.sh dash
-./tests/test-integration.sh bash
-BASH_COMPAT=31 ./tests/test-integration.sh bash
-./tests/test-integration.sh zsh
-```
--->
+Output will be found in generated README.md file.
 
 ## Compatibility testing
 

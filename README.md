@@ -66,7 +66,7 @@ Configuration:
             - output is a tty and tput colors>=8, false otherwise.
             - tput is installed
             - tput colors>=8
-          tput colors = 8
+          tput colors = 256
           is a tty = no
     --light-mode|--no-light-mode or set $LIGHT_MODE=true: 
     --command-output-command|--cc or set $SHOW_CMD_OUTPUT_CMD:
@@ -189,7 +189,7 @@ Examples:
     The names are used in notifications and files storing outout.
 
 Add synchronized swimming to your CLI!
-Version: 1.11.0
+Version: 1.11.1
 
 ```
 
@@ -299,6 +299,9 @@ $ parallelly \
     lots-of-output 'cat $(which parallelly)' \
     failing 'echo ERROR ; exit 1'
 parallelly will run 3 commands in parallel 
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 ============= Failed command output =============
 ERROR Failure in command failing after 0.0 seconds.
 + echo ERROR ; exit 1
@@ -308,7 +311,7 @@ STDERR output for failed command failing: (no output)
 STDOUT output for failed command failing: 6 bytes 1 line
 + tail -n1 /tmp/demo-tmp-dir-24e84ee24f/parallelly-logs/failing.stdout
 ERROR
-3 commands finished in 0.5 seconds.
+3 commands finished in 0.8 seconds.
 ERROR 1 command failed: failing 
 
 ```
@@ -331,7 +334,17 @@ $ parallelly \
     sleep9 'sleep 0.1' \
     sleep0 'sleep 0.1'
 parallelly will run 10 commands in parallel 
-10 commands finished in 0.4 seconds.
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+10 commands finished in 0.6 seconds.
 + echo
 
 $ parallelly \
@@ -347,16 +360,26 @@ $ parallelly \
     sleep0 'sleep 0.1'
 parallelly will run 10 commands sequentially 
 FORCE_SEQUENTIAL is set: Waiting for command sleep1 to finish
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 FORCE_SEQUENTIAL is set: Waiting for command sleep2 to finish
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 FORCE_SEQUENTIAL is set: Waiting for command sleep3 to finish
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 FORCE_SEQUENTIAL is set: Waiting for command sleep4 to finish
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 FORCE_SEQUENTIAL is set: Waiting for command sleep5 to finish
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 FORCE_SEQUENTIAL is set: Waiting for command sleep6 to finish
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 FORCE_SEQUENTIAL is set: Waiting for command sleep7 to finish
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 FORCE_SEQUENTIAL is set: Waiting for command sleep8 to finish
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 FORCE_SEQUENTIAL is set: Waiting for command sleep9 to finish
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 FORCE_SEQUENTIAL is set: Waiting for command sleep0 to finish
-10 commands finished in 1.3 seconds.
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+10 commands finished in 1.5 seconds.
 
 ```
 
@@ -371,8 +394,11 @@ $ parallelly \
     lots-of-output 'cat $(which parallelly)' \
     failing 'echo ERROR ; exit 1'
 parallelly will run 3 commands in parallel 
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 ============= Successful command(s) =============
-Command long-running succeeded in 0.2 seconds.
+Command long-running succeeded in 0.3 seconds.
 + echo OK >&2 && sleep 0.25
 /tmp/demo-tmp-dir-ca128f1014/parallelly-logs/long-running.stderr
 /tmp/demo-tmp-dir-ca128f1014/parallelly-logs/long-running.stdout
@@ -399,7 +425,7 @@ STDERR output for failed command failing: (no output)
 STDOUT output for failed command failing: 6 bytes 1 line
 + tail -n1 /tmp/demo-tmp-dir-ca128f1014/parallelly-logs/failing.stdout
 ERROR
-3 commands finished in 0.8 seconds.
+3 commands finished in 1.1 seconds.
 ERROR 1 command failed: failing 
 
 ```
@@ -436,10 +462,10 @@ PARALLELLY_TMP_DIR=/tmp/demo-tmp-dir-86b09d2f5f
 SHOW_LINE_COUNT=true
 SHOW_BYTE_COUNT=true
 HUMAN_READABLE_BYTE_COUNT=true
-NOTIFY_COMMAND=true
-FAILURE_NOTIFY_COMMAND=true
+NOTIFY_COMMAND=notify-send
+FAILURE_NOTIFY_COMMAND=notify-send
 NOTIFY_COMMAND_ARGS=
-FAILURE_NOTIFY_COMMAND_ARGS=
+FAILURE_NOTIFY_COMMAND_ARGS=--urgency=critical
 ENABLE_COLORS=false
 LIGHT_MODE=false
 SHOW_CONFIGURATION=false
@@ -467,8 +493,11 @@ See output at:
 ============= Waiting for commands to finish =============
 Will list successful and failed commands.
 
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 ============= Successful command(s) =============
-Command long-running succeeded in 0.2 seconds.
+Command long-running succeeded in 0.3 seconds.
 + echo OK >&2 && sleep 0.25
 /tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/long-running.stderr
 /tmp/demo-tmp-dir-86b09d2f5f/parallelly-logs/long-running.stdout
@@ -498,7 +527,7 @@ ERROR
 
 ============= SUMMARY =============
 2 commands succeeded
-3 commands finished in 0.7 seconds.
+3 commands finished in 1.1 seconds.
 ERROR 1 command failed: failing 
 
 ```
@@ -516,6 +545,7 @@ By default, only the last line of output is shown.
 $ parallelly \
     -a onlylastline 'printf "a\nb\nc\nd\ne"'
 parallelly will run 1 commands in parallel 
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 ============= Successful command(s) =============
 Command onlylastline succeeded in 0.0 seconds.
 + printf "a\nb\nc\nd\ne"
@@ -527,12 +557,13 @@ STDOUT output for successful command onlylastline: 9 bytes 4 lines
 e
 (no newline at end of output)
 
-1 command finished in 0.2 seconds.
+1 command finished in 0.6 seconds.
 + echo
 
 $ parallelly \
     --cc-args -n3 -a last3lines 'printf "a\nb\nc\nd\ne"'
 parallelly will run 1 commands in parallel 
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 ============= Successful command(s) =============
 Command last3lines succeeded in 0.0 seconds.
 + printf "a\nb\nc\nd\ne"
@@ -546,12 +577,13 @@ d
 e
 (no newline at end of output)
 
-1 command finished in 0.1 seconds.
+1 command finished in 0.2 seconds.
 + echo
 
 $ parallelly \
     --cc cat -a last3lines 'printf "a\nb\nc\nd\ne"'
 parallelly will run 1 commands in parallel 
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 ============= Successful command(s) =============
 Command last3lines succeeded in 0.0 seconds.
 + printf "a\nb\nc\nd\ne"
@@ -583,6 +615,9 @@ $ parallelly \
     lots-of-output 'cat $(which parallelly)' \
     failing 'echo ERROR ; exit 1'
 parallelly will run 3 commands in parallel 
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 ============= Successful command(s) =============
 Command long-running succeeded in 0.3 seconds.
 + echo OK >&2 && sleep 0.25
@@ -611,7 +646,7 @@ STDERR output for failed command failing: (no output)
 STDOUT output for failed command failing: 6 bytes 1 line
 + tail -n1 /tmp/demo-tmp-dir-865db193fd/parallelly-logs/failing.stdout
 ERROR
-3 commands finished in 0.8 seconds.
+3 commands finished in 1.1 seconds.
 ERROR 1 command failed: failing 
 
 ```
@@ -630,8 +665,11 @@ $ parallelly \
     failing 'echo ERROR ; exit 1'
 parallelly will run 3 commands sequentially 
 FORCE_SEQUENTIAL is set: Waiting for command long-running to finish
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 FORCE_SEQUENTIAL is set: Waiting for command lots-of-output to finish
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 FORCE_SEQUENTIAL is set: Waiting for command failing to finish
+Error spawning command line “dbus-launch --autolaunch=0901e04646ab485291e89972218b5ae7 --binary-syntax --close-stderr”: Child process exited with code 1
 ============= Successful command(s) =============
 Command long-running succeeded in 0.2 seconds.
 + echo OK >&2 && sleep 0.25
@@ -660,7 +698,7 @@ STDOUT output for successful command failing: 6 bytes 1 line
 + tail -n1 /tmp/demo-tmp-dir-9c3727b652/parallelly-logs/failing.stdout
 ERROR
 
-3 commands finished in 0.8 seconds.
+3 commands finished in 1.1 seconds.
 
 ```
 
@@ -691,10 +729,10 @@ PARALLELLY_TMP_DIR=/tmp/demo-tmp-dir-8836bf85cb
 SHOW_LINE_COUNT=true
 SHOW_BYTE_COUNT=true
 HUMAN_READABLE_BYTE_COUNT=true
-NOTIFY_COMMAND=true
-FAILURE_NOTIFY_COMMAND=true
+NOTIFY_COMMAND=notify-send
+FAILURE_NOTIFY_COMMAND=notify-send
 NOTIFY_COMMAND_ARGS=
-FAILURE_NOTIFY_COMMAND_ARGS=
+FAILURE_NOTIFY_COMMAND_ARGS=--urgency=critical
 ENABLE_COLORS=false
 LIGHT_MODE=false
 SHOW_CONFIGURATION=true
@@ -718,10 +756,10 @@ PARALLELLY_TMP_DIR=/tmp/demo-tmp-dir-8836bf85cb
 SHOW_LINE_COUNT=true
 SHOW_BYTE_COUNT=true
 HUMAN_READABLE_BYTE_COUNT=true
-NOTIFY_COMMAND=true
-FAILURE_NOTIFY_COMMAND=true
+NOTIFY_COMMAND=notify-send
+FAILURE_NOTIFY_COMMAND=notify-send
 NOTIFY_COMMAND_ARGS=
-FAILURE_NOTIFY_COMMAND_ARGS=
+FAILURE_NOTIFY_COMMAND_ARGS=--urgency=critical
 ENABLE_COLORS=false
 LIGHT_MODE=true
 SHOW_CONFIGURATION=true
@@ -730,7 +768,7 @@ Temporary directory CMD_OUT_DIR=(unset!)
 
 $ parallelly \
     --version
-1.11.0
+1.11.1
 $ parallelly \
     --debug
 DEBUG: arglog: Remaining (0)
